@@ -19,6 +19,16 @@ publishing {
     }
 }
 
+gradlePlugin {
+    plugins {
+        create("gradleInsights") {
+            id = "com.smplio.gradle-insights"
+            displayName = "GradleInsigts"
+            implementationClass = "com.smplio.GradleInsightsPlugin"
+        }
+    }
+}
+
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
     testImplementation(kotlin("test"))

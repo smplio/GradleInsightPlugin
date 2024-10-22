@@ -9,9 +9,9 @@ import javax.inject.Inject
 class GradleInsightsPlugin @Inject constructor(private val registry: BuildEventsListenerRegistry): Plugin<Project> {
     override fun apply(project: Project) {
         project.pluginManager.apply(ReportingBasePlugin::class.java)
+
+        val timerRecorder = project.gradle.sharedServices.registerIfAbsent(TimerService::class.java.simpleName, TimerService::class.java) {}
         project.gradle.taskGraph.whenReady {
-            val clazz = TimerService::class.java
-            val timerRecorder = project.gradle.sharedServices.registerIfAbsent(clazz.simpleName, clazz) {}
             registry.onTaskCompletion(timerRecorder)
         }
     }
