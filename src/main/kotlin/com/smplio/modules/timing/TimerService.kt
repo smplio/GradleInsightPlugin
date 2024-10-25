@@ -1,4 +1,4 @@
-package com.smplio
+package com.smplio.modules.timing
 
 import org.gradle.api.services.BuildService
 import org.gradle.api.services.BuildServiceParameters
