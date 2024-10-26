@@ -1,6 +1,5 @@
-package com.smplio.modules.graph
+package com.smplio.gradle.build.insights.modules.graph
 
-import com.smplio.modules.graph.GraphBuilder.Node.Link
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.artifacts.ProjectDependency
@@ -47,7 +46,7 @@ class GraphBuilder(
                             }
 
                             nodes[currentProjectNode.item.path]?.nodeDependsOn?.add(
-                                Link(
+                                Node.Link(
                                     nodes[dependencyProject.path] ?: continue,
                                     configuration,
                                 )
@@ -100,7 +99,7 @@ class GraphBuilder(
                     }
                     if (currentTask.project != dependency.project) {
                         graphMap[currentTask.project]?.nodeDependsOn?.add(
-                            Link(graphMap[key]!!)
+                            Node.Link(graphMap[key]!!)
                         )
                     }
                 }

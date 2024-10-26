@@ -4,7 +4,7 @@ plugins {
     `maven-publish`
 }
 
-group = "com.smplio"
+group = "com.smplio.gradle.build.insights"
 version = "1.0-SNAPSHOT"
 
 repositories {
@@ -22,9 +22,9 @@ publishing {
 gradlePlugin {
     plugins {
         create("gradleInsights") {
-            id = "com.smplio.gradle-insights"
+            id = "com.smplio.gradle.build-insights"
             displayName = "GradleInsigts"
-            implementationClass = "com.smplio.GradleInsightsPlugin"
+            implementationClass = "com.smplio.gradle.build.insights.GradleInsightsPlugin"
         }
     }
 }
