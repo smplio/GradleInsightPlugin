@@ -1,6 +1,7 @@
 package com.smplio.gradle.build.insights.modules.timing
 
 import com.smplio.gradle.build.insights.modules.graph.GraphBuilder
+import com.smplio.gradle.build.insights.modules.timing.report.ConsoleExecutionTimeReporter
 import org.gradle.api.Project
 import org.gradle.build.event.BuildEventsListenerRegistry
 
@@ -19,6 +20,7 @@ class ExecutionTimeMeasurementModule(
         ) {
             it.parameters.startParameters.set(ExecutionTimeMeasurementService.SerializableStartParameter(project.gradle.startParameter))
             it.parameters.projectDir.set(project.projectDir)
+            it.parameters.reporter.set(ConsoleExecutionTimeReporter())
         }
 
         if (enabled) {

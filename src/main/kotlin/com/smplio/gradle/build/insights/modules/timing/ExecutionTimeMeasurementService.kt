@@ -1,5 +1,10 @@
 package com.smplio.gradle.build.insights.modules.timing
 
+import com.smplio.gradle.build.insights.modules.timing.report.BuildHostInfo
+import com.smplio.gradle.build.insights.modules.timing.report.ExecutionStatus
+import com.smplio.gradle.build.insights.modules.timing.report.ExecutionTimeReport
+import com.smplio.gradle.build.insights.modules.timing.report.IExecutionTimeReporter
+import com.smplio.gradle.build.insights.modules.timing.report.TaskExecutionStats
 import com.smplio.gradle.build.insights.vcs.providers.GitDataProvider
 import org.gradle.StartParameter
 import org.gradle.api.provider.Property
@@ -24,6 +29,7 @@ abstract class ExecutionTimeMeasurementService : BuildService<ExecutionTimeMeasu
     interface Parameters: BuildServiceParameters {
         val startParameters: Property<SerializableStartParameter>
         val projectDir: Property<File>
+        val reporter: Property<IExecutionTimeReporter>
     }
 
     private val buildStartTime: Instant = Instant.now()
@@ -72,7 +78,7 @@ abstract class ExecutionTimeMeasurementService : BuildService<ExecutionTimeMeasu
             Duration.between(buildStartTime, Instant.now()).toMillis(),
             taskExecutionReports,
         )
-        println(report)
+        parameters.reporter.get().processReport(report)
     }
 
     class SerializableStartParameter: Serializable {

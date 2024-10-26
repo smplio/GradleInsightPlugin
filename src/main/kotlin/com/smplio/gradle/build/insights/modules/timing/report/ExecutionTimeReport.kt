@@ -1,4 +1,4 @@
-package com.smplio.gradle.build.insights.modules.timing
+package com.smplio.gradle.build.insights.modules.timing.report
 
 import com.smplio.gradle.build.insights.vcs.VCSData
 import java.net.InetAddress
