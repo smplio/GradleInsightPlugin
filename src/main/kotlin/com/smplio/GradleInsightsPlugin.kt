@@ -20,6 +20,9 @@ class GradleInsightsPlugin @Inject constructor(private val registry: BuildEvents
             registry.onTaskCompletion(timerService)
         }
 
-        GraphBuilder().buildTaskDependencyGraph(project, project.gradle.startParameter.taskNames)
+        GraphBuilder().also {
+//            it.buildTaskDependencyGraph(project, project.gradle.startParameter.taskNames)
+            it.buildProjectDependencyGraph(project, listOf("implementation", "api"))
+        }
     }
 }
