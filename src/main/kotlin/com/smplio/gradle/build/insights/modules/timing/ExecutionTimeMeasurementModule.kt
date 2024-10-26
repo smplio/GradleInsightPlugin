@@ -16,7 +16,10 @@ class ExecutionTimeMeasurementModule(
         val timerService = sharedServices.registerIfAbsent(
             ExecutionTimeMeasurementService::class.java.simpleName,
             ExecutionTimeMeasurementService::class.java,
-        ) {}
+        ) {
+            it.parameters.startParameters.set(ExecutionTimeMeasurementService.SerializableStartParameter(project.gradle.startParameter))
+            it.parameters.projectDir.set(project.projectDir)
+        }
 
         if (enabled) {
             project.gradle.taskGraph.whenReady {

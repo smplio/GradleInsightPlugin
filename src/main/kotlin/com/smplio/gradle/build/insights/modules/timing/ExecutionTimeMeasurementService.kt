@@ -1,35 +1,85 @@
 package com.smplio.gradle.build.insights.modules.timing
 
+import com.smplio.gradle.build.insights.vcs.providers.GitDataProvider
+import org.gradle.StartParameter
+import org.gradle.api.provider.Property
 import org.gradle.api.services.BuildService
 import org.gradle.api.services.BuildServiceParameters
 import org.gradle.tooling.events.FinishEvent
 import org.gradle.tooling.events.OperationCompletionListener
+import org.gradle.tooling.events.task.TaskFailureResult
 import org.gradle.tooling.events.task.TaskFinishEvent
+import org.gradle.tooling.events.task.TaskSkippedResult
+import org.gradle.tooling.events.task.TaskSuccessResult
+import java.io.File
+import java.io.Serializable
 import java.time.Duration
 import java.time.Instant
-import java.util.concurrent.ConcurrentHashMap
 
-abstract class ExecutionTimeMeasurementService : BuildService<BuildServiceParameters.None>,
+abstract class ExecutionTimeMeasurementService : BuildService<ExecutionTimeMeasurementService.Parameters>,
     OperationCompletionListener,
     AutoCloseable
 {
 
+    interface Parameters: BuildServiceParameters {
+        val startParameters: Property<SerializableStartParameter>
+        val projectDir: Property<File>
+    }
+
     private val buildStartTime: Instant = Instant.now()
-    private val taskDurations: ConcurrentHashMap<String, Long> = ConcurrentHashMap()
+    private val taskExecutionReports: MutableList<TaskExecutionStats> = mutableListOf()
 
     override fun onFinish(event: FinishEvent) {
         if (event is TaskFinishEvent) {
-            val durationMs = event.result.endTime - event.result.startTime
-            taskDurations[event.descriptor.taskPath] = Duration.ofMillis(durationMs).seconds
+            val result = event.result
+            val durationMs = result.endTime - result.startTime
+            taskExecutionReports.add(TaskExecutionStats(
+                event.descriptor.taskPath,
+                when (result) {
+                    is TaskSuccessResult -> ExecutionStatus.SUCCESS
+                    is TaskSkippedResult -> ExecutionStatus.SKIPPED
+                    is TaskFailureResult -> ExecutionStatus.FAILED
+                    else -> ExecutionStatus.UNKNOWN
+                },
+                when (result) {
+                    is TaskSuccessResult -> {
+                        when {
+                            result.isFromCache -> "FROM-CACHE"
+                            result.isUpToDate -> "UP-TO-DATE"
+                            else -> result.executionReasons?.joinToString() ?: "EXECUTED"
+                        }
+                    }
+                    is TaskSkippedResult -> {
+                        result.skipMessage
+                    }
+                    is TaskFailureResult -> {
+                        result.failures.joinToString("\n\n") {
+                            "${it.message}\n${it.description}\n${it.causes}"
+                        }
+                    }
+                    else -> "UNKNOWN"
+                },
+                Duration.ofMillis(durationMs).seconds
+            ))
         }
     }
 
     override fun close() {
-        println("Total duration: ${Duration.between(buildStartTime, Instant.now()).seconds}")
-        println("Per task stats: ")
+        val report = ExecutionTimeReport(
+            parameters.startParameters.get().taskNames,
+            GitDataProvider().get(parameters.projectDir.get()),
+            BuildHostInfo(),
+            Duration.between(buildStartTime, Instant.now()).toMillis(),
+            taskExecutionReports,
+        )
+        println(report)
+    }
 
-        for (taskPath in taskDurations.keys()) {
-            println("$taskPath:\t${taskDurations[taskPath]}")
+    class SerializableStartParameter: Serializable {
+        val taskNames: List<String>
+
+        constructor(item: StartParameter) {
+            taskNames = item.taskNames
         }
     }
 }
