@@ -9,7 +9,7 @@ import java.time.Duration
 import java.time.Instant
 import java.util.concurrent.ConcurrentHashMap
 
-abstract class TimerService : BuildService<BuildServiceParameters.None>,
+abstract class ExecutionTimeMeasurementService : BuildService<BuildServiceParameters.None>,
     OperationCompletionListener,
     AutoCloseable
 {

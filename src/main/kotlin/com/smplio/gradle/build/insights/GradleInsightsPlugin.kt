@@ -1,7 +1,7 @@
 package com.smplio.gradle.build.insights
 
 import com.smplio.gradle.build.insights.modules.graph.GraphBuilder
-import com.smplio.gradle.build.insights.modules.timing.TimerService
+import com.smplio.gradle.build.insights.modules.timing.ExecutionTimeMeasurementModule
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.ReportingBasePlugin
@@ -18,21 +18,15 @@ class GradleInsightsPlugin @Inject constructor(private val registry: BuildEvents
             GradleInsightsPluginExtension::class.java,
             project,
         )
-        val timeMeasurementEnabled = pluginConfig.getExecutionTimeMeasurementConfiguration().enabled.get()
 
-        val sharedServices = project.gradle.sharedServices
-        val timerService = sharedServices.registerIfAbsent(TimerService::class.java.simpleName, TimerService::class.java) {}
+        ExecutionTimeMeasurementModule(
+            project,
+            registry,
+            pluginConfig.getExecutionTimeMeasurementConfiguration(),
+        ).initialize()
 
-        if (timeMeasurementEnabled) {
-            project.gradle.taskGraph.whenReady {
-                registry.onTaskCompletion(timerService)
-            }
-        }
 
         GraphBuilder().also {
-            if (timeMeasurementEnabled) {
-                it.buildTaskDependencyGraph(project, project.gradle.startParameter.taskNames)
-            }
             it.buildProjectDependencyGraph(project, listOf("implementation", "api"))
         }
     }

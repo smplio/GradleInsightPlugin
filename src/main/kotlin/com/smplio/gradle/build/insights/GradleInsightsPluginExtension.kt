@@ -1,10 +1,9 @@
 package com.smplio.gradle.build.insights
 
+import com.smplio.gradle.build.insights.modules.timing.ExecutionTimeMeasurementConfiguration
 import org.gradle.api.Action
 import org.gradle.api.Project
-import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Nested
-import javax.inject.Inject
 
 
 abstract class GradleInsightsPluginExtension(project: Project) {
@@ -19,8 +18,4 @@ abstract class GradleInsightsPluginExtension(project: Project) {
     companion object {
         const val EXTENSION_NAME = "gradleInsights"
     }
-}
-
-abstract class ExecutionTimeMeasurementConfiguration @Inject constructor(project: Project) {
-    val enabled: Property<Boolean> = project.objects.property(Boolean::class.java).convention(false)
 }

@@ -1,6 +1,6 @@
 plugins {
-    `java-gradle-plugin`
     kotlin("jvm") version "1.9.23"
+    `java-gradle-plugin`
     `maven-publish`
 }
 
@@ -23,7 +23,7 @@ gradlePlugin {
     plugins {
         create("gradleInsights") {
             id = "com.smplio.gradle.build-insights"
-            displayName = "GradleInsigts"
+            displayName = "GradleInsights"
             implementationClass = "com.smplio.gradle.build.insights.GradleInsightsPlugin"
         }
     }
