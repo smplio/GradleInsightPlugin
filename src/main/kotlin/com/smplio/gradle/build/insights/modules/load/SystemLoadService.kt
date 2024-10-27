@@ -17,17 +17,19 @@ abstract class SystemLoadService: BuildService<BuildServiceParameters.None>, Ope
         registry.register(SystemLoadMetric.HeapUsedMetric())
         registry.register(SystemLoadMetric.HeapMaxMetric())
 
-        reporter = ConsoleReporter.forRegistry(registry)
-            .convertRatesTo(TimeUnit.SECONDS)
-            .convertDurationsTo(TimeUnit.MILLISECONDS)
-            .build()
-        reporter.start(5, TimeUnit.SECONDS);
+        reporter = LocalCacheReporter(
+            registry,
+            "LocalCacheRegistry",
+            MetricFilter.ALL,
+            TimeUnit.SECONDS,
+            TimeUnit.MILLISECONDS
+        )
+        reporter.start(5, TimeUnit.SECONDS)
     }
 
     override fun onFinish(event: FinishEvent?) {}
 
     override fun close() {
-        println("Closing service")
         reporter.close()
     }
 }
