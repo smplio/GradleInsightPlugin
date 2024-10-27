@@ -32,13 +32,19 @@ abstract class ExecutionTimeMeasurementService : BuildService<ExecutionTimeMeasu
         val reporter: Property<IExecutionTimeReporter>
     }
 
-    private val buildStartTime: Instant = Instant.now()
+    private var buildStartTime: Instant? = null
     private val taskExecutionReports: MutableList<TaskExecutionStats> = mutableListOf()
 
     override fun onFinish(event: FinishEvent) {
         if (event is TaskFinishEvent) {
             val result = event.result
-            val durationMs = result.endTime - result.startTime
+
+            buildStartTime = buildStartTime?.let {
+                if(it.toEpochMilli() > result.startTime) {
+                    Instant.ofEpochMilli(result.startTime)
+                } else { it }
+            } ?: Instant.ofEpochMilli(result.startTime)
+
             taskExecutionReports.add(TaskExecutionStats(
                 event.descriptor.taskPath,
                 when (result) {
@@ -65,7 +71,8 @@ abstract class ExecutionTimeMeasurementService : BuildService<ExecutionTimeMeasu
                     }
                     else -> "UNKNOWN"
                 },
-                Duration.ofMillis(durationMs).seconds
+                result.startTime,
+                result.endTime,
             ))
         }
     }
@@ -75,7 +82,10 @@ abstract class ExecutionTimeMeasurementService : BuildService<ExecutionTimeMeasu
             parameters.startParameters.get().taskNames,
             GitDataProvider().get(parameters.projectDir.get()),
             BuildHostInfo(),
-            Duration.between(buildStartTime, Instant.now()).toMillis(),
+            Duration.between(
+                buildStartTime,
+                Instant.ofEpochMilli(taskExecutionReports.map { it.endTime }.max())
+            ).toMillis(),
             taskExecutionReports,
         )
         parameters.reporter.get().processReport(report)

@@ -15,7 +15,8 @@ data class TaskExecutionStats(
     val taskName: String,
     val status: ExecutionStatus,
     val statusDescription: String,
-    val executionTimeMs: Long,
+    val startTime: Long,
+    val endTime: Long,
 )
 
 data class BuildHostInfo(
