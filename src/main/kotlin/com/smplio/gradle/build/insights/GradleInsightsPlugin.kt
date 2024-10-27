@@ -1,6 +1,7 @@
 package com.smplio.gradle.build.insights
 
 import com.smplio.gradle.build.insights.modules.graph.GraphBuilder
+import com.smplio.gradle.build.insights.modules.load.SystemLoadModule
 import com.smplio.gradle.build.insights.modules.timing.ExecutionTimeMeasurementModule
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -23,6 +24,11 @@ class GradleInsightsPlugin @Inject constructor(private val registry: BuildEvents
             project,
             registry,
             pluginConfig.getExecutionTimeMeasurementConfiguration(),
+        ).initialize()
+
+        SystemLoadModule(
+            project,
+            registry,
         ).initialize()
 
 

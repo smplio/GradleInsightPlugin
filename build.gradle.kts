@@ -32,6 +32,8 @@ gradlePlugin {
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
     testImplementation(kotlin("test"))
+
+    implementation(libs.dropwizard.metrics.core)
 }
 
 kotlin {
