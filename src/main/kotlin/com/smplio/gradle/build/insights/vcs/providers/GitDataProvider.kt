@@ -1,11 +1,11 @@
 package com.smplio.gradle.build.insights.vcs.providers
 
 import com.smplio.gradle.build.insights.vcs.VCSData
-import com.smplio.gradle.build.insights.vcs.VCSDataProvider
+import com.smplio.gradle.build.insights.vcs.IVCSDataProvider
 import java.io.File
 import java.util.concurrent.TimeUnit
 
-class GitDataProvider: VCSDataProvider {
+class GitDataProvider: IVCSDataProvider {
     override fun get(projectDir: File): VCSData? {
         val processBuilder = ProcessBuilder().also {
             it.directory(projectDir)

@@ -24,7 +24,7 @@ class HTMLReporter(project: Project): IExecutionTimeReporter, ISystemLoadReporte
     private var taskDuration: DurationReport? = null
     private var configurationDuration: DurationReport? = null
 
-    override fun processExecutionReport(executionTimeReport: ExecutionTimeReport) {
+    override fun reportExecutionTime(executionTimeReport: ExecutionTimeReport) {
         taskDuration = executionTimeReport.tasksDuration
         configurationDuration = executionTimeReport.configurationDuration
 

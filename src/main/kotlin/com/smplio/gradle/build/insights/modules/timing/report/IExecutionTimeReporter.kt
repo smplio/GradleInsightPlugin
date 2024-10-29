@@ -1,7 +1,7 @@
 package com.smplio.gradle.build.insights.modules.timing.report
 
-import java.io.Serializable
+import com.smplio.gradle.build.insights.reporters.IReporter
 
-interface IExecutionTimeReporter: Serializable {
-    fun processExecutionReport(executionTimeReport: ExecutionTimeReport)
+interface IExecutionTimeReporter: IReporter {
+    fun reportExecutionTime(executionTimeReport: ExecutionTimeReport)
 }

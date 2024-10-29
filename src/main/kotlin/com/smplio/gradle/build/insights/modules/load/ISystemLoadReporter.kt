@@ -1,8 +1,8 @@
 package com.smplio.gradle.build.insights.modules.load
 
-import java.io.Serializable
+import com.smplio.gradle.build.insights.reporters.IReporter
 import java.util.concurrent.ConcurrentLinkedQueue
 
-interface ISystemLoadReporter: Serializable {
+interface ISystemLoadReporter: IReporter {
     fun reportSystemLoad(measurements: ConcurrentLinkedQueue<Pair<Long, List<Pair<String, Number>>>>)
 }

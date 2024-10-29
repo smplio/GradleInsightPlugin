@@ -2,6 +2,6 @@ package com.smplio.gradle.build.insights.vcs
 
 import java.io.File
 
-interface VCSDataProvider {
+interface IVCSDataProvider {
     fun get(projectDir: File): VCSData?
 }

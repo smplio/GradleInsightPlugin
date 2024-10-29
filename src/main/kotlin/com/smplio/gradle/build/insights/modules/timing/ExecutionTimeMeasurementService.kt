@@ -83,7 +83,7 @@ abstract class ExecutionTimeMeasurementService : BuildService<ExecutionTimeMeasu
             DurationReport(buildStartTime ?: -1, lastExecutedTaskEndTime),
             taskExecutionReports,
         )
-        parameters.reporter.get().processExecutionReport(report)
+        parameters.reporter.get().reportExecutionTime(report)
     }
 
     class SerializableStartParameter(item: StartParameter) : Serializable {
