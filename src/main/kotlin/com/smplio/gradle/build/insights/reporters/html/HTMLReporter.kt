@@ -16,6 +16,11 @@ class HTMLReporter(project: Project): IExecutionTimeReporter, ISystemLoadReporte
     private val tasksFile = reportFolder.toPath().resolve("tasks.json").toFile()
     private val systemLoadFile = reportFolder.toPath().resolve("systemLoad.json").toFile()
 
+    private val chartJsPath = reportFolder.toPath().resolve("chart.js")
+    private val scriptJsPath = reportFolder.toPath().resolve("script.js")
+    private val styleCssPath = reportFolder.toPath().resolve("style.css")
+    private val reportHtmlPath = reportFolder.toPath().resolve("index.html")
+
     private var taskDuration: DurationReport? = null
     private var configurationDuration: DurationReport? = null
 
@@ -67,10 +72,7 @@ class HTMLReporter(project: Project): IExecutionTimeReporter, ISystemLoadReporte
     }
 
     private fun tryGenerateReport() {
-        if (!tasksFile.exists() || !systemLoadFile.exists()) {
-            println("Failed attempt to generate report ${tasksFile.exists()} ${systemLoadFile.exists()}")
-            return
-        }
+        if (!tasksFile.exists() || !systemLoadFile.exists()) return
 
         val html = javaClass.getResourceAsStream("/index.html")?.reader()?.readText()?.format(
             configurationDuration?.startTime ?: -1,
@@ -80,7 +82,7 @@ class HTMLReporter(project: Project): IExecutionTimeReporter, ISystemLoadReporte
             systemLoadFile.reader().readText(),
         )
 
-        reportFolder.toPath().resolve("index.html").toFile().bufferedWriter(Charsets.UTF_8).use {
+        reportHtmlPath.toFile().bufferedWriter(Charsets.UTF_8).use {
             it.write(html)
         }
 
@@ -88,23 +90,25 @@ class HTMLReporter(project: Project): IExecutionTimeReporter, ISystemLoadReporte
 
         Files.copy(
             javaClass.getResourceAsStream("/chart.js"),
-            reportFolder.toPath().resolve("chart.js"),
+            chartJsPath,
             StandardCopyOption.REPLACE_EXISTING,
         )
 
         Files.copy(
             javaClass.getResourceAsStream("/script.js"),
-            reportFolder.toPath().resolve("script.js"),
+            scriptJsPath,
             StandardCopyOption.REPLACE_EXISTING,
         )
 
         Files.copy(
             javaClass.getResourceAsStream("/style.css"),
-            reportFolder.toPath().resolve("style.css"),
+            styleCssPath,
             StandardCopyOption.REPLACE_EXISTING,
         )
 
         tasksFile.deleteOnExit()
         systemLoadFile.deleteOnExit()
+
+        println("Report is available in $reportHtmlPath")
     }
 }

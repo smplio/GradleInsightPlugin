@@ -23,8 +23,6 @@ class ExecutionTimeMeasurementModule(
             }
 
             project.gradle.taskGraph.whenReady {
-                println("Task graph ready")
-
                 val configurationEndTime = System.currentTimeMillis()
 
                 val sharedServices = project.gradle.sharedServices
