@@ -88,7 +88,7 @@ abstract class ExecutionTimeMeasurementService : BuildService<ExecutionTimeMeasu
             ).toMillis(),
             taskExecutionReports,
         )
-        parameters.reporter.get().processReport(report)
+        parameters.reporter.get().processExecutionReport(report)
     }
 
     class SerializableStartParameter: Serializable {

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Build insight report</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div>
+    <!-- Task container above the timeline -->
+    <div id="task-timeline" class="task-timeline overflow-container"></div>
+
+    <!-- Timeline track with draggable window overlay -->
+    <div id="timeline-track" class="timeline-track">
+        <div id="ruler" class="ruler"></div>
+        <div id="time-window" class="time-window">
+            <div id="start-handle" class="handle"></div>
+            <div id="end-handle" class="handle"></div>
+        </div>
+    </div>
+
+    <div id="charts-overflow-container" class="overflow-container">
+        <div class="chart-resizable-container">
+            <canvas id="memoryChart"></canvas>
+        </div>
+        <div class="chart-resizable-container">
+            <canvas id="cpuChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<script>
+    let totalTaskExecutionTime = %d;
+    let tasks = %s;
+    let systemStats = %s;
+</script>
+<script src="script.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="chart.js"></script>
+</body>
+</html>

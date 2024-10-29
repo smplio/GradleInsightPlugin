@@ -12,6 +12,7 @@ class LocalCacheReporter(
     filter: MetricFilter,
     rateUnit: TimeUnit,
     durationUnit: TimeUnit,
+    private val reporter: ISystemLoadReporter,
 ): ScheduledReporter(
     registry,
     name,
@@ -44,6 +45,6 @@ class LocalCacheReporter(
 
     override fun close() {
         super.close()
-        println(measurements)
+        reporter.reportSystemLoad(measurements)
     }
 }

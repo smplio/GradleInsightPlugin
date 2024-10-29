@@ -5,7 +5,8 @@ import org.gradle.build.event.BuildEventsListenerRegistry
 
 class SystemLoadModule(
     private val project: Project,
-    private val registry: BuildEventsListenerRegistry
+    private val registry: BuildEventsListenerRegistry,
+    private val reporter: ISystemLoadReporter,
 ) {
 
     fun initialize() {
@@ -13,7 +14,9 @@ class SystemLoadModule(
         val systemLoadService = sharedServices.registerIfAbsent(
             SystemLoadService::class.java.simpleName,
             SystemLoadService::class.java,
-        ) {}
+        ) {
+            it.parameters.reporter.set(reporter)
+        }
         registry.onTaskCompletion(systemLoadService)
     }
 }

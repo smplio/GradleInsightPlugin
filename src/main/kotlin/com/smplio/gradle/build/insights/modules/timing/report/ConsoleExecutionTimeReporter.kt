@@ -2,7 +2,7 @@ package com.smplio.gradle.build.insights.modules.timing.report
 import java.time.Duration
 
 class ConsoleExecutionTimeReporter: IExecutionTimeReporter {
-    override fun processReport(executionTimeReport: ExecutionTimeReport) {
+    override fun processExecutionReport(executionTimeReport: ExecutionTimeReport) {
         val totalBuildTime: Long = executionTimeReport.totalExecutionTimeMs
         val longestTaskName: Int = executionTimeReport.tasksExecutionStats.map { it.taskName.length }.max() + 1
 

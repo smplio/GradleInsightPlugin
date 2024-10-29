@@ -1,0 +1,104 @@
+body {
+    font-family: Arial, sans-serif;
+}
+
+.overflow-container {
+    width: 100%;
+    height: auto;
+    overflow-x: hidden;
+}
+
+/* Task container */
+.task-timeline {
+    position: relative;
+}
+
+/* Timeline track */
+.timeline-track {
+    position: relative;
+    height: 50px;
+    background: #e0e0e0;
+}
+
+/* Time window overlay */
+.time-window {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.1);
+    cursor: move;
+}
+
+/* Ruler spans full timeline width */
+.ruler {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: flex-start;
+}
+
+.mark {
+    width: 1px;
+    background: #333;
+    display: flex;
+    align-items: flex-end;
+    position: relative;
+}
+
+.second-mark {
+    height: 25%;
+    opacity: 0.5;
+}
+
+.minute-mark {
+    height: 40%;
+    opacity: 0.7;
+}
+
+.hour-mark {
+    height: 60%;
+}
+
+.time-label {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-top: 2px;
+    font-size: 10px;
+    color: #333;
+    text-align: center;
+}
+
+
+/* Task style */
+.task {
+    position: absolute;
+    background-color: #4CAF50;
+    font-size: small;
+    color: white;
+    padding: 2px 2px 2px 5px;
+    border-radius: 5px;
+    height: 20px;
+    box-sizing: border-box;
+    white-space: nowrap;
+    overflow-x: hidden;
+}
+
+.handle {
+    width: 10px;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    cursor: ew-resize;
+    position: absolute;
+}
+#start-handle { left: 0; }
+#end-handle { right: 0; }
+
+.chart-resizable-container {
+    height: 200px;
+    display: flex;
+}

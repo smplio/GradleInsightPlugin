@@ -34,6 +34,7 @@ dependencies {
     testImplementation(kotlin("test"))
 
     implementation(libs.dropwizard.metrics.core)
+    implementation(libs.json)
 }
 
 kotlin {
