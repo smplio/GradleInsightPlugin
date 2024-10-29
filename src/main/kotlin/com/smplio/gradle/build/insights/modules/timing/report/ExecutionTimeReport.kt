@@ -5,8 +5,8 @@ import java.net.InetAddress
 
 data class ExecutionTimeReport(
     val requestedTasks: List<String>,
-    val vcsData: VCSData?,
-    val buildHostInfo: BuildHostInfo?,
+//    val vcsData: VCSData?,
+//    val buildHostInfo: BuildHostInfo?,
     val buildStartTime: Long,
     val configurationDuration: DurationReport,
     val tasksDuration: DurationReport,

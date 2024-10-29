@@ -1,7 +1,6 @@
 package com.smplio.gradle.build.insights.modules.timing
 
 import com.smplio.gradle.build.insights.modules.timing.report.*
-import com.smplio.gradle.build.insights.vcs.providers.GitDataProvider
 import org.gradle.StartParameter
 import org.gradle.api.provider.Property
 import org.gradle.api.services.BuildService
@@ -12,7 +11,6 @@ import org.gradle.tooling.events.task.TaskFailureResult
 import org.gradle.tooling.events.task.TaskFinishEvent
 import org.gradle.tooling.events.task.TaskSkippedResult
 import org.gradle.tooling.events.task.TaskSuccessResult
-import java.io.File
 import java.io.Serializable
 
 abstract class ExecutionTimeMeasurementService : BuildService<ExecutionTimeMeasurementService.Parameters>,
@@ -22,7 +20,6 @@ abstract class ExecutionTimeMeasurementService : BuildService<ExecutionTimeMeasu
 
     interface Parameters: BuildServiceParameters {
         val startParameters: Property<SerializableStartParameter>
-        val projectDir: Property<File>
         val reporter: Property<IExecutionTimeReporter>
         val configurationStartTime: Property<Long>
         val configurationEndTime: Property<Long>
@@ -76,8 +73,6 @@ abstract class ExecutionTimeMeasurementService : BuildService<ExecutionTimeMeasu
         val lastExecutedTaskEndTime = taskExecutionReports.maxOf { it.duration.endTime }
         val report = ExecutionTimeReport(
             parameters.startParameters.get().taskNames,
-            GitDataProvider().get(parameters.projectDir.get()),
-            BuildHostInfo(),
             parameters.configurationStartTime.get(),
             DurationReport(parameters.configurationStartTime.get(), parameters.configurationEndTime.get()),
             DurationReport(buildStartTime ?: -1, lastExecutedTaskEndTime),

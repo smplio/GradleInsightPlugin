@@ -22,11 +22,15 @@ class GradleInsightsPlugin @Inject constructor(private val registry: BuildEvents
             project,
         )
 
+        val vcsDataProvider = pluginConfig.vcsDataProvider.get()
         val executionTimeReporter = pluginConfig.getExecutionTimeMeasurementConfiguration().executionTimeReporter.get()
         val compositeReporter = CompositeReporter(
             if (pluginConfig.gatherHtmlReport.get()) {
                 listOf(
-                    HTMLReporter(project),
+                    HTMLReporter(
+                        project,
+                        vcsDataProvider,
+                    ),
                     executionTimeReporter,
                 )
             } else {

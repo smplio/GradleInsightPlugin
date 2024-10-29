@@ -31,7 +31,6 @@ class ExecutionTimeMeasurementModule(
                     ExecutionTimeMeasurementService::class.java,
                 ) {
                     it.parameters.startParameters.set(ExecutionTimeMeasurementService.SerializableStartParameter(project.gradle.startParameter))
-                    it.parameters.projectDir.set(project.projectDir)
                     it.parameters.reporter.set(reporter)
                     it.parameters.configurationStartTime.set(configurationStartTime)
                     it.parameters.configurationEndTime.set(configurationEndTime)

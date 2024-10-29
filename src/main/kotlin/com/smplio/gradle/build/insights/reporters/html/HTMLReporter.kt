@@ -4,6 +4,7 @@ import com.smplio.gradle.build.insights.modules.load.ISystemLoadReporter
 import com.smplio.gradle.build.insights.modules.timing.report.DurationReport
 import com.smplio.gradle.build.insights.modules.timing.report.ExecutionTimeReport
 import com.smplio.gradle.build.insights.modules.timing.report.IExecutionTimeReporter
+import com.smplio.gradle.build.insights.vcs.IVCSDataProvider
 import org.gradle.api.Project
 import org.json.JSONArray
 import org.json.JSONObject
@@ -11,7 +12,10 @@ import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 import java.util.concurrent.ConcurrentLinkedQueue
 
-class HTMLReporter(project: Project): IExecutionTimeReporter, ISystemLoadReporter {
+class HTMLReporter(
+    project: Project,
+    private val vcsIVCSDataProvider: IVCSDataProvider,
+): IExecutionTimeReporter, ISystemLoadReporter {
     private val reportFolder = project.layout.buildDirectory.dir("build-report").get().asFile
     private val tasksFile = reportFolder.toPath().resolve("tasks.json").toFile()
     private val systemLoadFile = reportFolder.toPath().resolve("systemLoad.json").toFile()
