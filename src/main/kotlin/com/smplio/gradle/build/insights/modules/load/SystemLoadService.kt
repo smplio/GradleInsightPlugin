@@ -33,7 +33,7 @@ abstract class SystemLoadService: BuildService<SystemLoadService.Parameters>,
             TimeUnit.MILLISECONDS,
             parameters.reporter.get(),
         )
-        reporter.start(5, TimeUnit.SECONDS)
+        reporter.start(0, 5, TimeUnit.SECONDS)
     }
 
     override fun onFinish(event: FinishEvent?) {}

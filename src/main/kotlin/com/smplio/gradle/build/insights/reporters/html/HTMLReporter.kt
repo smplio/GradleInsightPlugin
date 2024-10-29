@@ -1,6 +1,7 @@
 package com.smplio.gradle.build.insights.reporters.html
 
 import com.smplio.gradle.build.insights.modules.load.ISystemLoadReporter
+import com.smplio.gradle.build.insights.modules.timing.report.DurationReport
 import com.smplio.gradle.build.insights.modules.timing.report.ExecutionTimeReport
 import com.smplio.gradle.build.insights.modules.timing.report.IExecutionTimeReporter
 import org.gradle.api.Project
@@ -15,19 +16,28 @@ class HTMLReporter(project: Project): IExecutionTimeReporter, ISystemLoadReporte
     private val tasksFile = reportFolder.toPath().resolve("tasks.json").toFile()
     private val systemLoadFile = reportFolder.toPath().resolve("systemLoad.json").toFile()
 
-    private var taskExecutionTime: Long? = null
+    private var taskDuration: DurationReport? = null
+    private var configurationDuration: DurationReport? = null
 
     override fun processExecutionReport(executionTimeReport: ExecutionTimeReport) {
-        taskExecutionTime = executionTimeReport.totalExecutionTimeMs
+        taskDuration = executionTimeReport.tasksDuration
+        configurationDuration = executionTimeReport.configurationDuration
+
         val tasks = JSONArray()
-        val startTime = executionTimeReport.tasksExecutionStats.minOfOrNull { it.startTime } ?: 0
         for (taskStats in executionTimeReport.tasksExecutionStats) {
             tasks.put(JSONObject().apply {
+                put("type", "task")
                 put("name", taskStats.taskName)
-                put("start", taskStats.startTime - startTime)
-                put("end", taskStats.endTime - startTime)
+                put("start", taskStats.duration.startTime)
+                put("end", taskStats.duration.endTime)
             })
         }
+        tasks.put(JSONObject().apply {
+            put("type", "configuration")
+            put("name", "Configuration")
+            put("start", configurationDuration?.startTime ?: 0)
+            put("end", configurationDuration?.endTime ?: 0)
+        })
 
         reportFolder.mkdirs()
         tasksFile.bufferedWriter(Charsets.UTF_8).use {
@@ -63,7 +73,9 @@ class HTMLReporter(project: Project): IExecutionTimeReporter, ISystemLoadReporte
         }
 
         val html = javaClass.getResourceAsStream("/index.html")?.reader()?.readText()?.format(
-            taskExecutionTime ?: 0,
+            configurationDuration?.startTime ?: -1,
+            configurationDuration?.endTime ?: -1,
+            taskDuration?.getDuration() ?: -1,
             tasksFile.reader().readText(),
             systemLoadFile.reader().readText(),
         )
@@ -92,7 +104,7 @@ class HTMLReporter(project: Project): IExecutionTimeReporter, ISystemLoadReporte
             StandardCopyOption.REPLACE_EXISTING,
         )
 
-        tasksFile.delete()
-        systemLoadFile.delete()
+        tasksFile.deleteOnExit()
+        systemLoadFile.deleteOnExit()
     }
 }

@@ -75,9 +75,8 @@ body {
 
 
 /* Task style */
-.task {
+.timeline-item {
     position: absolute;
-    background-color: #4CAF50;
     font-size: small;
     color: white;
     padding: 2px 2px 2px 5px;
@@ -85,7 +84,20 @@ body {
     height: 20px;
     box-sizing: border-box;
     white-space: nowrap;
+}
+
+.timeline-item span {
+    display: block;
+    width: 100%;
     overflow-x: hidden;
+}
+
+.task {
+    background-color: #4CAF50;
+}
+
+.configuration {
+    background-color: #0CA9DD;
 }
 
 .handle {
@@ -101,4 +113,31 @@ body {
 .chart-resizable-container {
     height: 200px;
     display: flex;
+}
+
+/* Tooltip container */
+.tooltip {
+    display: inline-block;
+}
+
+/* Tooltip text */
+.tooltip .tooltiptext {
+    visibility: hidden;
+    background-color: #5f5f5f;
+    color: #fff;
+    text-align: left;
+    padding: 5px;
+    border-radius: 6px;
+
+    display: block;
+    position: relative;
+    left: -5px;
+    top: 5px;
+    z-index: 1;
+    width: fit-content;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.tooltip:hover .tooltiptext {
+    visibility: visible;
 }

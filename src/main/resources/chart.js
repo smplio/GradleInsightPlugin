@@ -9,10 +9,22 @@ const heapMaxMetrics = systemStats.map(value => value.heapMax);
 const heapUsedMetrics = systemStats.map(value => value.heapUsed);
 const systemLoadAverageMetrics = systemStats.map(value => value.systemLoadAverage);
 
+function formatBytes(bytes, decimals = 2) {
+    if (!+bytes) return '0 Bytes'
+
+    const k = 1024
+    const dm = decimals < 0 ? 0 : decimals
+    const sizes = ['Bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB']
+
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`
+}
+
 new Chart(cpuChart, {
     type: 'line',
     data: {
-        labels: labels.map(value => ((value - minTime) / 1000) + 's'),
+        labels: labels.map(value => Math.round((value - minTime) / 1000) + 's'),
         datasets: [
             {
                 label: 'CPU usage',
@@ -29,7 +41,7 @@ new Chart(cpuChart, {
         scales: {
             y: {
                 beginAtZero: true,
-                display: false
+                display: false,
             }
         },
         plugins: {
@@ -43,14 +55,14 @@ new Chart(cpuChart, {
 new Chart(memoryChart, {
     type: 'line',
     data: {
-        labels: labels.map(value => ((value - minTime) / 1000) + 's'),
+        labels: labels.map(value => Math.round((value - minTime) / 1000) + 's'),
         datasets: [{
-                label: 'Max heap available',
-                data: heapMaxMetrics,
-                fill: false,
-                borderColor: 'rgb(151,75,192)',
-                tension: 0.1
-            },
+            label: 'Max heap available',
+            data: heapMaxMetrics,
+            fill: false,
+            borderColor: 'rgb(151,75,192)',
+            tension: 0.1
+        },
             {
                 label: 'Heap used',
                 data: heapUsedMetrics,
@@ -66,12 +78,27 @@ new Chart(memoryChart, {
         scales: {
             y: {
                 beginAtZero: true,
-                display: false
+                display: false,
             }
         },
         plugins: {
             legend: {
                 align: 'start',
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        let label = context.dataset.label || '';
+
+                        if (label) {
+                            label += ': ';
+                        }
+                        if (context.parsed.y !== null) {
+                            label += formatBytes(context.parsed.y);
+                        }
+                        return label;
+                    }
+                }
             }
         }
     }

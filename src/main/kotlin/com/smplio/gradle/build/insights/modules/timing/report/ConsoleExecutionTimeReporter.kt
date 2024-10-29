@@ -3,14 +3,14 @@ import java.time.Duration
 
 class ConsoleExecutionTimeReporter: IExecutionTimeReporter {
     override fun processExecutionReport(executionTimeReport: ExecutionTimeReport) {
-        val totalBuildTime: Long = executionTimeReport.totalExecutionTimeMs
-        val longestTaskName: Int = executionTimeReport.tasksExecutionStats.map { it.taskName.length }.max() + 1
+        val totalBuildTime: Long = executionTimeReport.tasksDuration.getDuration()
+        val longestTaskName: Int = executionTimeReport.tasksExecutionStats.maxOf { it.taskName.length } + 1
 
         println("Build took: ${Duration.ofMillis(totalBuildTime).seconds}s")
 
         for (taskStats in executionTimeReport.tasksExecutionStats) {
-            val taskDuration = Duration.ofMillis(taskStats.endTime - taskStats.startTime).seconds
-            val progress = createProgressBar((taskStats.endTime - taskStats.startTime) * 1.0f / totalBuildTime)
+            val taskDuration = Duration.ofMillis(taskStats.duration.getDuration()).seconds
+            val progress = createProgressBar((taskStats.duration.getDuration()) * 1.0f / totalBuildTime)
             val taskNamePadded = taskStats.taskName.padStart(longestTaskName).padEnd(longestTaskName + 1)
             println("|${progress}| $taskNamePadded | ${"${taskDuration}s".padStart(4)}")
         }

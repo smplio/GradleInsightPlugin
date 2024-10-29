@@ -7,7 +7,9 @@ data class ExecutionTimeReport(
     val requestedTasks: List<String>,
     val vcsData: VCSData?,
     val buildHostInfo: BuildHostInfo?,
-    val totalExecutionTimeMs: Long,
+    val buildStartTime: Long,
+    val configurationDuration: DurationReport,
+    val tasksDuration: DurationReport,
     val tasksExecutionStats: List<TaskExecutionStats>,
 )
 
@@ -15,9 +17,15 @@ data class TaskExecutionStats(
     val taskName: String,
     val status: ExecutionStatus,
     val statusDescription: String,
+    val duration: DurationReport,
+)
+
+data class DurationReport(
     val startTime: Long,
     val endTime: Long,
-)
+) {
+    fun getDuration(): Long = endTime - startTime
+}
 
 data class BuildHostInfo(
     val userName: String = System.getProperty("user.name"),

@@ -23,19 +23,38 @@ function clamp(value, min, max) {
     return Math.max(min, Math.min(max, value));
 }
 
+function formatTime(timestamp) {
+    const dtFormat = new Intl.DateTimeFormat('en-GB', {
+        timeStyle: 'medium',
+        timeZone: 'UTC'
+    });
+
+    return dtFormat.format(new Date(timestamp));
+}
+
 // Render tasks based on the time window
 function createTasks() {
-    // taskTimeline.innerHTML = '';
-
     tasks.forEach(task => {
         let taskEl;
         if (task.name in taskToDivMap) {
             taskEl = taskToDivMap[task.name];
         } else {
             taskEl = document.createElement("div");
-            taskEl.className = "task";
+            taskEl.className = "timeline-item";
+            taskEl.classList.add(task.type);
+            taskEl.classList.add("tooltip");
             taskEl.style.top = `${task.rowIdx * 25}px`;
-            taskEl.textContent = task.name;
+
+            taskNameEl = document.createElement("span");
+            taskNameEl.textContent = task.name;
+            taskEl.appendChild(taskNameEl)
+
+            tooltipEl = document.createElement("div");
+            tooltipEl.className = "tooltiptext";
+            tooltipEl.innerHTML = `<span>${task.name}</span>\n<br><span>Started: ${formatTime(task.start)}</span>\n<span>Finished: ${formatTime(task.end)}</span>`;
+
+            taskEl.appendChild(tooltipEl);
+
             taskToDivMap[task.name] = taskEl;
             taskTimeline.appendChild(taskEl);
         }
@@ -121,7 +140,7 @@ function calculateRows(tasks) {
     })
 
     rowCount = maxHeight;
-    taskTimeline.style.height = `${rowCount * 25}px`;
+    taskTimeline.style.height = `${(rowCount + 4) * 25}px`;
 
     return sweepLineTasks.filter(value => value.isStart).map(value => value.task);
 }
@@ -214,7 +233,7 @@ function onMouseMove(e) {
         )
         timeWindowEl.style.left = `${leftPx}px`;
     } else if (isDraggingStart) {
-        timeWindowEl.style.width = `${Math.max(10, timeWindowEl.offsetWidth - deltaX)}px`;
+        timeWindowEl.style.width = `${clamp(timeWindowEl.offsetWidth - deltaX, 10, timelineTrackEl.offsetWidth)}px`;
         timeWindowEl.style.left = `${Math.max(0, timeWindowEl.offsetLeft + deltaX)}px`;
     } else if (isDraggingEnd) {
         timeWindowEl.style.width = `${Math.min(timelineTrackEl.offsetWidth, timeWindowEl.offsetWidth + deltaX)}px`;
