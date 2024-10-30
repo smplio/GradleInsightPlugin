@@ -1,6 +1,5 @@
 package com.smplio.gradle.build.insights.modules.timing
 
-import com.smplio.gradle.build.insights.modules.graph.GraphBuilder
 import com.smplio.gradle.build.insights.reporters.CompositeReporter
 import com.smplio.gradle.build.insights.reporters.html.HTMLReporter
 import org.gradle.api.Project
@@ -46,6 +45,5 @@ class ExecutionTimeMeasurementModule(
                 registry.onTaskCompletion(timerService)
             }
         }
-        GraphBuilder().buildTaskDependencyGraph(project, project.gradle.startParameter.taskNames)
     }
 }
