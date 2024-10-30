@@ -197,10 +197,9 @@ internal fun printGraphViz(rootNode: Node, topology: HashMap<Int, MutableSet<Nod
     for (topologyEntry in topology) {
         subgraphs.add(
             """
-                ${topologyEntry.value.joinToString("\n") { "\"${it.item.path}\" [shape=square]" }}
-                {rank=same; ${topologyEntry.value.joinToString(" ") { "\"${it.item.path}\"" }}}
-                
-                """.trimIndent()
+            ${topologyEntry.value.joinToString("\n") { "\"${it.item.path}\" [shape=square]" }}
+            {rank=same; ${topologyEntry.value.joinToString(" ") { "\"${it.item.path}\"" }}}
+            """.trimIndent()
         )
     }
 
