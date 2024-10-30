@@ -26,41 +26,14 @@ class GraphBuilder{
         }
     }
 
-    fun buildProjectDependencyGraph(rootProject: Project, configurations: List<String>) {
+    fun buildProjectDependencyGraph(rootProject: Project) {
         rootProject.allprojects { project ->
-
-            val nodes = HashMap<String, Node>()
-            val rootNode = Node(project)
-            nodes[project.path] = rootNode
-            bfs(rootNode) { currentProjectNode, visitedProjects ->
-                val newWave = mutableSetOf<Node>()
-                for (configuration in configurations) {
-                    val dependencies = currentProjectNode.item.configurations.findByName(configuration)?.dependencies ?: continue
-                    for (dependency in dependencies) {
-                        if (dependency !is ProjectDependency) continue
-                        val dependencyProject = dependency.dependencyProject
-
-                        if (!nodes.containsKey(dependencyProject.path)) {
-                            nodes[dependencyProject.path] = Node(dependencyProject)
-                        }
-
-                        nodes[currentProjectNode.item.path]?.nodeDependsOn?.add(
-                            Node.Link(
-                                nodes[dependencyProject.path] ?: continue,
-                                configuration,
-                            )
-                        )
-
-                        if (!visitedProjects.contains(nodes[dependencyProject.path])) {
-                            newWave.add(nodes[dependencyProject.path] ?: continue)
-                        }
-                    }
-                }
-                return@bfs newWave
-            }
-
             project.tasks.register("buildProjectDependencyGraph", BuildProjectDependencyGraphTask::class.java) { task ->
-                task.rootNode.set(rootNode)
+                task.notCompatibleWithConfigurationCache(
+                    "This task is to be used once in a lifetime, but has significant impact on configuration time"
+                )
+                task.project.set(project)
+                task.configurations.convention("implementation,api")
             }
         }
     }
