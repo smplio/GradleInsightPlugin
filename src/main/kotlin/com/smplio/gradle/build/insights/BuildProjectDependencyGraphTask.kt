@@ -25,12 +25,20 @@ abstract class BuildProjectDependencyGraphTask @Inject constructor(
     val configurations: Property<String> = objectFactory.property(String::class.java)
 
     @get:Input
+    @get:Option(
+        option = "ignoreProjectsRegex",
+        description="If project paths matches pattern it will be ignored",
+    )
+    val ignoreProjectsRegex: Property<String> = objectFactory.property(String::class.java)
+
+    @get:Input
     internal abstract val project: Property<Project>
 
     @TaskAction
     fun buildProjectDependencyGraph() {
 
         val project = project.get()
+        val ignoreProjectsRegex = ignoreProjectsRegex.get().takeIf { it.isNotBlank() }?.toRegex()
 
         val nodes = HashMap<String, Node>()
         val rootNode = Node(project)
@@ -42,6 +50,10 @@ abstract class BuildProjectDependencyGraphTask @Inject constructor(
                 for (dependency in dependencies) {
                     if (dependency !is ProjectDependency) continue
                     val dependencyProject = dependency.dependencyProject
+
+                    if (ignoreProjectsRegex != null && ignoreProjectsRegex.containsMatchIn(dependencyProject.path)) {
+                        continue
+                    }
 
                     if (!nodes.containsKey(dependencyProject.path)) {
                         nodes[dependencyProject.path] = Node(dependencyProject)

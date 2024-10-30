@@ -34,6 +34,7 @@ class GraphBuilder{
                 )
                 task.project.set(project)
                 task.configurations.convention("implementation,api")
+                task.ignoreProjectsRegex.convention("")
             }
         }
     }

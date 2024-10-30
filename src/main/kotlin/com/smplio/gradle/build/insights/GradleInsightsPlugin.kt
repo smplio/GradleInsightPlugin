@@ -34,7 +34,7 @@ class GradleInsightsPlugin @Inject constructor(private val registry: BuildEvents
         ).initialize()
 
         GraphBuilder().also {
-            it.buildProjectDependencyGraph(project, listOf("implementation", "api"))
+            it.buildProjectDependencyGraph(project)
         }
     }
 }
