@@ -1,7 +1,8 @@
 package com.smplio.gradle.build.insights.vcs
 
 import java.io.File
+import java.io.Serializable
 
-interface IVCSDataProvider {
+interface IVCSDataProvider: Serializable {
     fun get(projectDir: File): VCSData?
 }

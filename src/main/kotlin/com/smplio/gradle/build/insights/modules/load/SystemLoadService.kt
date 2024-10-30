@@ -14,7 +14,7 @@ abstract class SystemLoadService: BuildService<SystemLoadService.Parameters>,
 {
 
     private val registry: MetricRegistry = MetricRegistry()
-    private val reporter: Reporter
+    private val reporter: LocalCacheReporter
 
     interface Parameters: BuildServiceParameters {
         val reporter: Property<ISystemLoadReporter>
@@ -31,7 +31,6 @@ abstract class SystemLoadService: BuildService<SystemLoadService.Parameters>,
             MetricFilter.ALL,
             TimeUnit.SECONDS,
             TimeUnit.MILLISECONDS,
-            parameters.reporter.get(),
         )
         reporter.start(0, 5, TimeUnit.SECONDS)
     }
@@ -39,6 +38,6 @@ abstract class SystemLoadService: BuildService<SystemLoadService.Parameters>,
     override fun onFinish(event: FinishEvent?) {}
 
     override fun close() {
-        reporter.close()
+        reporter.close(parameters.reporter.get())
     }
 }

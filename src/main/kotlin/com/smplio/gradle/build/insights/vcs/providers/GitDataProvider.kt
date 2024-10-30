@@ -3,6 +3,7 @@ package com.smplio.gradle.build.insights.vcs.providers
 import com.smplio.gradle.build.insights.vcs.VCSData
 import com.smplio.gradle.build.insights.vcs.IVCSDataProvider
 import java.io.File
+import java.io.Serializable
 import java.util.concurrent.TimeUnit
 
 class GitDataProvider: IVCSDataProvider {

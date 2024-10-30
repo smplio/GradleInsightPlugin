@@ -4,26 +4,26 @@ import com.smplio.gradle.build.insights.modules.load.ISystemLoadReporter
 import com.smplio.gradle.build.insights.modules.timing.report.DurationReport
 import com.smplio.gradle.build.insights.modules.timing.report.ExecutionTimeReport
 import com.smplio.gradle.build.insights.modules.timing.report.IExecutionTimeReporter
-import com.smplio.gradle.build.insights.vcs.IVCSDataProvider
 import org.gradle.api.Project
 import org.json.JSONArray
 import org.json.JSONObject
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 import java.util.concurrent.ConcurrentLinkedQueue
+import kotlin.io.path.Path
+import kotlin.io.path.absolutePathString
 
 class HTMLReporter(
     project: Project,
-    private val vcsIVCSDataProvider: IVCSDataProvider,
 ): IExecutionTimeReporter, ISystemLoadReporter {
     private val reportFolder = project.layout.buildDirectory.dir("build-report").get().asFile
     private val tasksFile = reportFolder.toPath().resolve("tasks.json").toFile()
     private val systemLoadFile = reportFolder.toPath().resolve("systemLoad.json").toFile()
 
-    private val chartJsPath = reportFolder.toPath().resolve("chart.js")
-    private val scriptJsPath = reportFolder.toPath().resolve("script.js")
-    private val styleCssPath = reportFolder.toPath().resolve("style.css")
-    private val reportHtmlPath = reportFolder.toPath().resolve("index.html")
+    private val chartJsPath = reportFolder.toPath().resolve("chart.js").absolutePathString()
+    private val scriptJsPath = reportFolder.toPath().resolve("script.js").absolutePathString()
+    private val styleCssPath = reportFolder.toPath().resolve("style.css").absolutePathString()
+    private val reportHtmlFile = reportFolder.toPath().resolve("index.html").toFile()
 
     private var taskDuration: DurationReport? = null
     private var configurationDuration: DurationReport? = null
@@ -86,7 +86,7 @@ class HTMLReporter(
             systemLoadFile.reader().readText(),
         )
 
-        reportHtmlPath.toFile().bufferedWriter(Charsets.UTF_8).use {
+        reportHtmlFile.bufferedWriter(Charsets.UTF_8).use {
             it.write(html)
         }
 
@@ -94,25 +94,25 @@ class HTMLReporter(
 
         Files.copy(
             javaClass.getResourceAsStream("/chart.js"),
-            chartJsPath,
+            Path(chartJsPath),
             StandardCopyOption.REPLACE_EXISTING,
         )
 
         Files.copy(
             javaClass.getResourceAsStream("/script.js"),
-            scriptJsPath,
+            Path(scriptJsPath),
             StandardCopyOption.REPLACE_EXISTING,
         )
 
         Files.copy(
             javaClass.getResourceAsStream("/style.css"),
-            styleCssPath,
+            Path(styleCssPath),
             StandardCopyOption.REPLACE_EXISTING,
         )
 
         tasksFile.deleteOnExit()
         systemLoadFile.deleteOnExit()
 
-        println("Report is available in $reportHtmlPath")
+        println("Report is available in ${reportHtmlFile.absolutePath}")
     }
 }
