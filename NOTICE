@@ -1,0 +1,9 @@
+GradleInsightPlugin
+Copyright 2024 Dmytro Rodionov
+
+This product includes software developed by third parties and distributed under the Apache License, Version 2.0.
+
+The following libraries are included under the terms of the Apache License 2.0:
+- io.dropwizard.metrics by Coda Hale and Yammer, Inc. and Dropwizard Team
+
+The full text of the Apache License 2.0 can be found in the LICENSE file included with this distribution.
