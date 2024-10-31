@@ -73,6 +73,7 @@ abstract class ExecutionTimeMeasurementService : BuildService<ExecutionTimeMeasu
         val lastExecutedTaskEndTime = taskExecutionReports.maxOf { it.duration.endTime }
         val report = ExecutionTimeReport(
             parameters.startParameters.get().taskNames,
+            BuildHostInfo(),
             parameters.configurationStartTime.get(),
             DurationReport(parameters.configurationStartTime.get(), parameters.configurationEndTime.get()),
             DurationReport(buildStartTime ?: -1, lastExecutedTaskEndTime),
