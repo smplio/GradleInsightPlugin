@@ -20,7 +20,7 @@ class HTMLReporter(
     private val tasksFile = reportFolder.toPath().resolve("tasks.json").toFile()
     private val systemLoadFile = reportFolder.toPath().resolve("systemLoad.json").toFile()
 
-    private val chartJsPath = reportFolder.toPath().resolve("chart.js").absolutePathString()
+    private val chartJsPath = reportFolder.toPath().resolve("build_charts.js").absolutePathString()
     private val scriptJsPath = reportFolder.toPath().resolve("script.js").absolutePathString()
     private val styleCssPath = reportFolder.toPath().resolve("style.css").absolutePathString()
     private val reportHtmlFile = reportFolder.toPath().resolve("index.html").toFile()
@@ -93,7 +93,7 @@ class HTMLReporter(
         println(reportFolder.absolutePath)
 
         Files.copy(
-            javaClass.getResourceAsStream("/chart.js"),
+            javaClass.getResourceAsStream("/build_charts.js"),
             Path(chartJsPath),
             StandardCopyOption.REPLACE_EXISTING,
         )
