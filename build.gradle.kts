@@ -14,6 +14,7 @@ repositories {
 publishing {
     publications {
         repositories {
+            mavenCentral()
             mavenLocal()
         }
     }
