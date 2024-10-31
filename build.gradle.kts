@@ -2,6 +2,8 @@ plugins {
     kotlin("jvm") version "1.7.0"
     `java-gradle-plugin`
     `maven-publish`
+
+    id("com.gradle.plugin-publish") version "1.2.1"
 }
 
 group = "com.smplio.gradle.build.insights"
@@ -9,6 +11,7 @@ version = "0.1"
 
 repositories {
     mavenCentral()
+    gradlePluginPortal()
 }
 
 publishing {
@@ -21,10 +24,17 @@ publishing {
 }
 
 gradlePlugin {
+    vcsUrl.set("https://github.com/smplio/GradleInsightPlugin")
+    website.set("https://github.com/smplio/GradleInsightPlugin")
     plugins {
         create("gradleInsights") {
             id = "com.smplio.gradle.build-insights"
             displayName = "GradleInsights"
+            description = "Swissknife plugin, that let's you visualize your build statistics"
+            tags.set(listOf(
+                "build",
+                "metrics",
+            ))
             implementationClass = "com.smplio.gradle.build.insights.GradleInsightsPlugin"
         }
     }
