@@ -55,3 +55,5 @@ kotlin {
         languageVersion.set(JavaLanguageVersion.of(17))
     }
 }
+
+println("Current plugin version: ${getArtifactVersionFromGit()}")

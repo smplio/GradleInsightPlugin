@@ -17,21 +17,22 @@ class SystemLoadModule(
         val systemLoadService = sharedServices.registerIfAbsent(
             SystemLoadService::class.java.simpleName,
             SystemLoadService::class.java,
-        ) { buildServiceSpec ->
-            project.gradle.taskGraph.whenReady {
-                val compositeReporter = CompositeReporter(
-                    if (gatherHtmlReport.get()) {
-                        listOf(
-                            HTMLReporter(
-                                project,
-                            ),
-                        )
-                    } else {
-                        emptyList()
-                    }
-                )
-                buildServiceSpec.parameters.reporter.set(compositeReporter)
-            }
+        ) {}
+
+        project.gradle.taskGraph.whenReady {
+            val compositeReporter = CompositeReporter(
+                if (gatherHtmlReport.get()) {
+                    listOf(
+                        HTMLReporter(
+                            project,
+                        ),
+                    )
+                } else {
+                    emptyList()
+                }
+            )
+            val service = systemLoadService.get()
+            service.reporter = compositeReporter
         }
         registry.onTaskCompletion(systemLoadService)
     }
