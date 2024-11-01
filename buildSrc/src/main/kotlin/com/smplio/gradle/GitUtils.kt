@@ -18,7 +18,7 @@ fun getArtifactVersionFromGit(): String {
         gitCommit = it.readText().trim()
     }
 
-    return gitTag.ifBlank {
+    return gitTag.replaceFirst("v", "").ifBlank {
         "$gitCommit-SNAPSHOT"
     }
 }
