@@ -1,3 +1,5 @@
+import com.smplio.gradle.getArtifactVersionFromGit
+
 plugins {
     kotlin("jvm") version "1.7.0"
     `java-gradle-plugin`
@@ -7,7 +9,7 @@ plugins {
 }
 
 group = "com.smplio.gradle.build.insights"
-version = "0.1"
+version = getArtifactVersionFromGit()
 
 repositories {
     mavenCentral()
