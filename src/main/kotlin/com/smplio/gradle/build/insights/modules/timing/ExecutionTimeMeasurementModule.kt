@@ -5,6 +5,7 @@ import com.smplio.gradle.build.insights.reporters.html.HTMLReporter
 import org.gradle.api.Project
 import org.gradle.api.provider.Property
 import org.gradle.build.event.BuildEventsListenerRegistry
+import com.smplio.gradle.build.insights.modules.timing.ExecutionTimeMeasurementService.SerializableStartParameter
 
 class ExecutionTimeMeasurementModule(
     private val project: Project,
@@ -32,12 +33,18 @@ class ExecutionTimeMeasurementModule(
             })
 
             if (configuration.enabled.get()) {
+
+                val startParameter = SerializableStartParameter.create(
+                    startParameter = project.gradle.startParameter,
+                    taskExecutionGraph = it,
+                )
+
                 val sharedServices = project.gradle.sharedServices
                 val timerService = sharedServices.registerIfAbsent(
                     ExecutionTimeMeasurementService::class.java.simpleName,
                     ExecutionTimeMeasurementService::class.java,
                 ) {
-                    it.parameters.startParameters.set(ExecutionTimeMeasurementService.SerializableStartParameter(project.gradle.startParameter))
+                    it.parameters.startParameters.set(startParameter)
                     it.parameters.reporter.set(default)
                     it.parameters.configurationStartTime.set(configurationStartTime)
                     it.parameters.configurationEndTime.set(configurationEndTime)

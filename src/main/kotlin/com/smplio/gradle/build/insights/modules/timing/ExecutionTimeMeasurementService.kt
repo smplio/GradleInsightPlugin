@@ -2,6 +2,7 @@ package com.smplio.gradle.build.insights.modules.timing
 
 import com.smplio.gradle.build.insights.modules.timing.report.*
 import org.gradle.StartParameter
+import org.gradle.api.execution.TaskExecutionGraph
 import org.gradle.api.provider.Property
 import org.gradle.api.services.BuildService
 import org.gradle.api.services.BuildServiceParameters
@@ -82,7 +83,19 @@ abstract class ExecutionTimeMeasurementService : BuildService<ExecutionTimeMeasu
         parameters.reporter.get().reportExecutionTime(report)
     }
 
-    class SerializableStartParameter(item: StartParameter) : Serializable {
-        val taskNames: List<String> = item.taskNames
+    class SerializableStartParameter private constructor(val taskNames: List<String>) : Serializable {
+        companion object {
+            fun create(
+                startParameter: StartParameter,
+                taskExecutionGraph: TaskExecutionGraph? = null,
+            ): SerializableStartParameter {
+                val taskNameToPathMapping = HashMap<String, String>()
+                taskExecutionGraph?.allTasks?.forEach { taskNameToPathMapping[it.name] = it.path }
+                val startTaskNames = startParameter.taskNames.map { taskName -> taskNameToPathMapping[taskName] ?: taskName }
+                return SerializableStartParameter(
+                    taskNames = startTaskNames,
+                )
+            }
+        }
     }
 }
