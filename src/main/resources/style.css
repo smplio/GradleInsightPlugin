@@ -92,8 +92,20 @@ body {
     overflow-x: hidden;
 }
 
-.task {
+.successful-task {
     background-color: #4CAF50;
+}
+
+.cached-task {
+    background-color: #FBC02D;
+}
+
+.failed-task {
+    background-color: #F44336;
+}
+
+.skipped-task {
+    background-color: #9E9E9E;
 }
 
 .configuration {

@@ -1,7 +1,9 @@
 package com.smplio.gradle.build.insights.reporters.html
 
 import com.smplio.gradle.build.insights.modules.load.ISystemLoadReporter
-import com.smplio.gradle.build.insights.modules.timing.report.DurationReport
+import com.smplio.gradle.build.insights.modules.timing.models.ConfigurationInfo
+import com.smplio.gradle.build.insights.modules.timing.models.Measured
+import com.smplio.gradle.build.insights.modules.timing.models.TaskInfo
 import com.smplio.gradle.build.insights.modules.timing.report.ExecutionTimeReport
 import com.smplio.gradle.build.insights.modules.timing.report.IExecutionTimeReporter
 import org.gradle.api.Project
@@ -25,28 +27,34 @@ class HTMLReporter(
     private val styleCssPath = uniqueReportFolder.toPath().resolve("style.css").absolutePathString()
     private val reportHtmlFile = uniqueReportFolder.toPath().resolve("index.html").toFile()
 
-    private var taskDuration: DurationReport? = null
-    private var configurationDuration: DurationReport? = null
+    private var taskExecutionTimeline: List<Measured<TaskInfo>>? = null
+    private var configurationTimeline: List<Measured<ConfigurationInfo>>? = null
 
     override fun reportExecutionTime(executionTimeReport: ExecutionTimeReport) {
-        taskDuration = executionTimeReport.tasksDuration
-        configurationDuration = executionTimeReport.configurationDuration
+        taskExecutionTimeline = executionTimeReport.taskExecutionTimeline
+        configurationTimeline = executionTimeReport.configurationTimeline
 
         val tasks = JSONArray()
-        for (taskStats in executionTimeReport.tasksExecutionStats) {
+        for (measuredTaskInfo in executionTimeReport.taskExecutionTimeline) {
+            val task = measuredTaskInfo.measuredInstance
             tasks.put(JSONObject().apply {
                 put("type", "task")
-                put("name", taskStats.taskName)
-                put("start", taskStats.duration.startTime)
-                put("end", taskStats.duration.endTime)
+                put("name", task.path)
+                put("start", measuredTaskInfo.startTime)
+                put("end", measuredTaskInfo.endTime)
+                put("status", task.status.toString())
+                put("status_description", task.status.description)
             })
         }
-        tasks.put(JSONObject().apply {
-            put("type", "configuration")
-            put("name", "Configuration")
-            put("start", configurationDuration?.startTime ?: 0)
-            put("end", configurationDuration?.endTime ?: 0)
-        })
+        for (measuredConfigurationInfo in executionTimeReport.configurationTimeline) {
+            val configurationInfo = measuredConfigurationInfo.measuredInstance
+            tasks.put(JSONObject().apply {
+                put("type", "configuration")
+                put("name", configurationInfo.projectName)
+                put("start", measuredConfigurationInfo.startTime)
+                put("end", measuredConfigurationInfo.endTime)
+            })
+        }
 
         baseReportFolder.mkdirs()
         tasksFile.bufferedWriter(Charsets.UTF_8).use {
@@ -84,9 +92,6 @@ class HTMLReporter(
         val buildChartsJsText = javaClass.getResourceAsStream("/build_charts.js")?.reader()?.use { it.readText() }
 
         val html = javaClass.getResourceAsStream("/index.html")?.reader()?.readText()?.format(
-            configurationDuration?.startTime ?: -1,
-            configurationDuration?.endTime ?: -1,
-            taskDuration?.getDuration() ?: -1,
             tasksFile.reader().use { it.readText() },
             systemLoadFile.reader().use { it.readText() },
             scriptJsText,

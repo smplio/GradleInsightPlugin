@@ -42,6 +42,25 @@ function createTasks() {
             taskEl = document.createElement("div");
             taskEl.className = "timeline-item";
             taskEl.classList.add(task.type);
+            if (task.type === "task") {
+                let taskClass = "";
+                switch(task.status) {
+                    case "SKIPPED":
+                        if (task.status_description === "FROM-CACHE") {
+                            taskClass = "cached-task";
+                        } else {
+                            taskClass = "skipped-task";
+                        }
+                        break;
+                    case "FAILED":
+                        taskClass = "failed-task";
+                        break;
+                    default:
+                        taskClass = "successful-task";
+                        break;
+                }
+                taskEl.classList.add(taskClass);
+            }
             taskEl.classList.add("tooltip");
             taskEl.style.top = `${task.rowIdx * 25}px`;
 
@@ -51,7 +70,17 @@ function createTasks() {
 
             tooltipEl = document.createElement("div");
             tooltipEl.className = "tooltiptext";
-            tooltipEl.innerHTML = `<span>${task.name}</span>\n<br><span>Started: ${formatTime(task.start)}</span>\n<span>Finished: ${formatTime(task.end)}</span>`;
+
+            let detailedStatus = task.status_description;
+            if (task.status === "SUCCESS") {
+                detailedStatus = "";
+            }
+            let statusBadge = `<span>Status: ${task.status}<br><pre>${detailedStatus}</pre></span><br>`;
+            if (task.type !== "task") {
+                statusBadge = "";
+            }
+
+            tooltipEl.innerHTML = `<span>${task.name}</span>\n<br>${statusBadge}<span>Started: ${formatTime(task.start)}</span>\n<span>Finished: ${formatTime(task.end)}</span>`;
 
             taskEl.appendChild(tooltipEl);
 

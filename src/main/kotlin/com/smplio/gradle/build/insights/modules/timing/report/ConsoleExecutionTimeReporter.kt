@@ -3,15 +3,18 @@ import java.time.Duration
 
 class ConsoleExecutionTimeReporter: IExecutionTimeReporter {
     override fun reportExecutionTime(executionTimeReport: ExecutionTimeReport) {
-        val totalTaskExecutionTime: Long = executionTimeReport.tasksDuration.getDuration()
-        val longestTaskName: Int = executionTimeReport.tasksExecutionStats.maxOf { it.taskName.length } + 1
+        val firstTaskStartTime = executionTimeReport.taskExecutionTimeline.minOf { it.startTime }
+        val lastTaskEndTime = executionTimeReport.taskExecutionTimeline.maxOf { it.endTime }
+        val totalTaskExecutionTime: Long = lastTaskEndTime - firstTaskStartTime
+        val longestTaskName: Int = executionTimeReport.taskExecutionTimeline.maxOf { it.measuredInstance.path.length } + 1
 
-        println("Build took: ${Duration.ofMillis(executionTimeReport.tasksDuration.endTime - executionTimeReport.configurationDuration.startTime).seconds}s")
+        println("Build took: ${Duration.ofMillis(executionTimeReport.buildInfo.duration).seconds}s")
 
-        for (taskStats in executionTimeReport.tasksExecutionStats) {
-            val taskDuration = Duration.ofMillis(taskStats.duration.getDuration()).seconds
-            val progress = createProgressBar((taskStats.duration.getDuration()) * 1.0f / totalTaskExecutionTime)
-            val taskNamePadded = taskStats.taskName.padStart(longestTaskName).padEnd(longestTaskName + 1)
+        for (measuredTaskInfo in executionTimeReport.taskExecutionTimeline) {
+            val taskInfo = measuredTaskInfo.measuredInstance
+            val taskDuration = Duration.ofMillis(measuredTaskInfo.duration).seconds
+            val progress = createProgressBar((measuredTaskInfo.duration) * 1.0f / totalTaskExecutionTime)
+            val taskNamePadded = taskInfo.path.padStart(longestTaskName).padEnd(longestTaskName + 1)
             println("|${progress}| $taskNamePadded | ${"${taskDuration}s".padStart(4)}")
         }
     }
