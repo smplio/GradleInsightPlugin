@@ -109,8 +109,8 @@ class HTMLReporter(
             StandardCopyOption.REPLACE_EXISTING,
         )
 
-        tasksFile.deleteOnExit()
-        systemLoadFile.deleteOnExit()
+        tasksFile.delete()
+        systemLoadFile.delete()
 
         println("Report is available in ${reportHtmlFile.absolutePath}")
     }
