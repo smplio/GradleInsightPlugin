@@ -3,6 +3,9 @@ package com.smplio.gradle.build.insights
 import com.smplio.gradle.build.insights.modules.graph.GraphBuilder
 import com.smplio.gradle.build.insights.modules.load.SystemLoadModule
 import com.smplio.gradle.build.insights.modules.timing.ExecutionTimeMeasurementModule
+import com.smplio.gradle.build.insights.modules.timing.ExecutionTimeMeasurementService
+import com.smplio.gradle.build.insights.reporters.CompositeReportBuildService
+import com.smplio.gradle.build.insights.reporters.html.HTMLReporter
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.ReportingBasePlugin
@@ -20,17 +23,30 @@ class GradleInsightsPlugin @Inject constructor(private val registry: BuildEvents
             project,
         )
 
+        val compositeReportBuildService = project.gradle.sharedServices.registerIfAbsent(
+            CompositeReportBuildService::class.java.simpleName,
+            CompositeReportBuildService::class.java,
+        ) {
+            it.parameters.reporters.set(mutableListOf(
+                pluginConfig.getExecutionTimeMeasurementConfiguration().executionTimeReporter.get(),
+            ).also { list ->
+                if (pluginConfig.gatherHtmlReport.get()) {
+                    list.add(HTMLReporter(project))
+                }
+            })
+        }
+
         ExecutionTimeMeasurementModule(
             project,
             registry,
             pluginConfig.getExecutionTimeMeasurementConfiguration(),
-            pluginConfig.gatherHtmlReport,
+            compositeReportBuildService,
         ).initialize()
 
         SystemLoadModule(
             project,
             registry,
-            pluginConfig.gatherHtmlReport,
+            compositeReportBuildService,
         ).initialize()
 
         GraphBuilder().also {

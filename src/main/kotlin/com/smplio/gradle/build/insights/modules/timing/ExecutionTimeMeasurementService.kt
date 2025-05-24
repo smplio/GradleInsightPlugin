@@ -4,7 +4,9 @@ import com.smplio.gradle.build.insights.modules.timing.models.BuildInfo
 import com.smplio.gradle.build.insights.modules.timing.models.ConfigurationInfo
 import com.smplio.gradle.build.insights.modules.timing.models.Measured
 import com.smplio.gradle.build.insights.modules.timing.models.TaskInfo
-import com.smplio.gradle.build.insights.modules.timing.report.*
+import com.smplio.gradle.build.insights.modules.timing.report.BuildHostInfo
+import com.smplio.gradle.build.insights.modules.timing.report.ExecutionTimeReport
+import com.smplio.gradle.build.insights.reporters.CompositeReportBuildService
 import org.gradle.StartParameter
 import org.gradle.api.execution.TaskExecutionGraph
 import org.gradle.api.provider.ListProperty
@@ -27,7 +29,7 @@ abstract class ExecutionTimeMeasurementService : BuildService<ExecutionTimeMeasu
 
     interface Parameters: BuildServiceParameters {
         val startParameters: Property<SerializableStartParameter>
-        val reporter: Property<IExecutionTimeReporter>
+        val reporter: Property<CompositeReportBuildService>
         val buildStartTime: Property<Long>
         val configurationsTimeline: ListProperty<Measured<ConfigurationInfo>>
     }

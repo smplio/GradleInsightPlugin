@@ -1,20 +1,19 @@
 package com.smplio.gradle.build.insights.modules.timing
 
-import com.smplio.gradle.build.insights.reporters.CompositeReporter
-import com.smplio.gradle.build.insights.reporters.html.HTMLReporter
+import com.smplio.gradle.build.insights.reporters.CompositeReportBuildService
 import org.gradle.api.Project
-import org.gradle.api.provider.Property
 import org.gradle.build.event.BuildEventsListenerRegistry
 import com.smplio.gradle.build.insights.modules.timing.ExecutionTimeMeasurementService.SerializableStartParameter
 import com.smplio.gradle.build.insights.modules.timing.models.ConfigurationInfo
 import com.smplio.gradle.build.insights.modules.timing.models.Measured
+import org.gradle.api.provider.Provider
 import java.util.concurrent.ConcurrentHashMap
 
 class ExecutionTimeMeasurementModule(
     private val project: Project,
     private val registry: BuildEventsListenerRegistry,
     private val configuration: ExecutionTimeMeasurementConfiguration,
-    private val gatherHtmlReport: Property<Boolean>,
+    private val reportBuildService: Provider<CompositeReportBuildService>,
 ) {
     fun initialize() {
         val buildStartTime = System.currentTimeMillis()
@@ -39,14 +38,6 @@ class ExecutionTimeMeasurementModule(
         }
 
         project.gradle.taskGraph.whenReady {
-            val default = CompositeReporter(mutableListOf(
-                configuration.executionTimeReporter.get(),
-            ).also { list ->
-                if (gatherHtmlReport.get()) {
-                    list.add(HTMLReporter(project))
-                }
-            })
-
             if (configuration.enabled.get()) {
 
                 val startParameter = SerializableStartParameter.create(
@@ -60,7 +51,7 @@ class ExecutionTimeMeasurementModule(
                     ExecutionTimeMeasurementService::class.java,
                 ) {
                     it.parameters.startParameters.set(startParameter)
-                    it.parameters.reporter.set(default)
+                    it.parameters.reporter.set(reportBuildService)
                     it.parameters.buildStartTime.set(buildStartTime)
                     it.parameters.configurationsTimeline.set(configurationTimeline)
                 }

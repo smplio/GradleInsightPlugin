@@ -60,8 +60,6 @@ class HTMLReporter(
         tasksFile.bufferedWriter(Charsets.UTF_8).use {
             it.write(tasks.toString(4))
         }
-
-        tryGenerateReport()
     }
 
     override fun reportSystemLoad(measurements: ConcurrentLinkedQueue<Pair<Long, List<Pair<String, Number>>>>) {
@@ -78,13 +76,9 @@ class HTMLReporter(
         systemLoadFile.bufferedWriter(Charsets.UTF_8).use {
             it.write(systemLoadJson.toString(4))
         }
-
-        tryGenerateReport()
     }
 
-    private fun tryGenerateReport() {
-        if (!tasksFile.exists() || !systemLoadFile.exists()) return
-
+    override fun submitReport() {
         uniqueReportFolder.mkdirs()
 
         val scriptJsText = javaClass.getResourceAsStream("/script.js")?.reader()?.use { it.readText() }
@@ -112,6 +106,6 @@ class HTMLReporter(
         tasksFile.delete()
         systemLoadFile.delete()
 
-        println("Report is available in ${reportHtmlFile.absolutePath}")
+        println("Build insights report is available in ${reportHtmlFile.absolutePath}")
     }
 }
