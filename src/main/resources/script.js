@@ -1,6 +1,6 @@
 let timeScale = 1;
-let timeWindowStart = Math.min(...tasks.map(value => value.start));
-let timeWindowEnd = Math.max(...tasks.map(value => value.end));
+let timeWindowStart = Math.min(...tasks.map(value => value.start), ...configurations.map(value => value.start));
+let timeWindowEnd = Math.max(...tasks.map(value => value.end), ...configurations.map(value => value.end));
 const durationMs = timeWindowEnd - timeWindowStart;
 
 // Draggable time window and handles
@@ -32,71 +32,82 @@ function formatTime(timestamp) {
     return dtFormat.format(new Date(timestamp));
 }
 
+// Render configurations based on the time window
+function createConfigurations() {
+    configurations.forEach(project => {
+        createTimelineBlock(project)
+    })
+}
+
 // Render tasks based on the time window
 function createTasks() {
     tasks.forEach(task => {
-        let taskEl;
-        if (task.name in taskToDivMap) {
-            taskEl = taskToDivMap[task.name];
-        } else {
-            taskEl = document.createElement("div");
-            taskEl.className = "timeline-item";
-            taskEl.classList.add(task.type);
-            if (task.type === "task") {
-                let taskClass = "";
-                switch(task.status) {
-                    case "SKIPPED":
-                        if (task.status_description === "FROM-CACHE") {
-                            taskClass = "cached-task";
-                        } else {
-                            taskClass = "skipped-task";
-                        }
-                        break;
-                    case "FAILED":
-                        taskClass = "failed-task";
-                        break;
-                    default:
-                        taskClass = "successful-task";
-                        break;
-                }
-                taskEl.classList.add(taskClass);
-            }
-            taskEl.classList.add("tooltip");
-            taskEl.style.top = `${task.rowIdx * 25}px`;
-
-            taskNameEl = document.createElement("span");
-            taskNameEl.textContent = task.name;
-            taskEl.appendChild(taskNameEl)
-
-            tooltipEl = document.createElement("div");
-            tooltipEl.className = "tooltiptext";
-
-            let detailedStatus = task.status_description;
-            if (task.status === "SUCCESS") {
-                detailedStatus = "";
-            }
-            let statusBadge = `<span>Status: ${task.status}<br><pre>${detailedStatus}</pre></span><br>`;
-            if (task.type !== "task") {
-                statusBadge = "";
-            }
-
-            tooltipEl.innerHTML = `<span>${task.name}</span>\n<br>${statusBadge}<span>Started: ${formatTime(task.start)}</span>\n<span>Finished: ${formatTime(task.end)}</span>`;
-
-            taskEl.appendChild(tooltipEl);
-
-            taskToDivMap[task.name] = taskEl;
-            taskTimeline.appendChild(taskEl);
-        }
-
-        taskEl.style.left = `${(task.start - timeWindowStart) * timeScale}px`;
-        taskEl.style.width = `${(task.end - task.start) * timeScale}px`;
-
-        if (task.end < timeWindowStart || task.start > timeWindowEnd) {
-            taskEl.style.visibility = "hidden";
-        } else {
-            taskEl.style.visibility = "visible";
-        }
+        createTimelineBlock(task)
     })
+}
+
+function createTimelineBlock(task) {
+    let taskEl;
+    if (task.name in taskToDivMap) {
+        taskEl = taskToDivMap[task.name];
+    } else {
+        taskEl = document.createElement("div");
+        taskEl.className = "timeline-item";
+        taskEl.classList.add(task.type);
+        if (task.type === "task") {
+            let taskClass = "";
+            switch(task.status) {
+                case "SKIPPED":
+                    if (task.status_description === "FROM-CACHE") {
+                        taskClass = "cached-task";
+                    } else {
+                        taskClass = "skipped-task";
+                    }
+                    break;
+                case "FAILED":
+                    taskClass = "failed-task";
+                    break;
+                default:
+                    taskClass = "successful-task";
+                    break;
+            }
+            taskEl.classList.add(taskClass);
+        }
+        taskEl.classList.add("tooltip");
+        taskEl.style.top = `${task.rowIdx * 25}px`;
+
+        taskNameEl = document.createElement("span");
+        taskNameEl.textContent = task.name;
+        taskEl.appendChild(taskNameEl)
+
+        tooltipEl = document.createElement("div");
+        tooltipEl.className = "tooltiptext";
+
+        let detailedStatus = task.status_description;
+        if (task.status === "SUCCESS") {
+            detailedStatus = "";
+        }
+        let statusBadge = `<span>Status: ${task.status}<br><pre>${detailedStatus}</pre></span><br>`;
+        if (task.type !== "task") {
+            statusBadge = "";
+        }
+
+        tooltipEl.innerHTML = `<span>${task.name}</span>\n<br>${statusBadge}<span>Started: ${formatTime(task.start)}</span>\n<span>Finished: ${formatTime(task.end)}</span>`;
+
+        taskEl.appendChild(tooltipEl);
+
+        taskToDivMap[task.name] = taskEl;
+        taskTimeline.appendChild(taskEl);
+    }
+
+    taskEl.style.left = `${(task.start - timeWindowStart) * timeScale}px`;
+    taskEl.style.width = `${(task.end - task.start) * timeScale}px`;
+
+    if (task.end < timeWindowStart || task.start > timeWindowEnd) {
+        taskEl.style.visibility = "hidden";
+    } else {
+        taskEl.style.visibility = "visible";
+    }
 }
 
 // Calculate overlapping task rows
@@ -244,6 +255,7 @@ function updateTimeWindow() {
     // Render tasks
     updateRuler();
     updateCharts();
+    createConfigurations();
     createTasks();
 }
 
@@ -313,5 +325,6 @@ window.addEventListener ("resize", e => {
 });
 
 // Initial render
+configurations = calculateRows(configurations);
 tasks = calculateRows(tasks);
 updateTimeWindow();

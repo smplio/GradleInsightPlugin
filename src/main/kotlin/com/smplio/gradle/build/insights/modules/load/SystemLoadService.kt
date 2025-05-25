@@ -1,6 +1,7 @@
 package com.smplio.gradle.build.insights.modules.load
 
 import com.codahale.metrics.*
+import com.smplio.gradle.build.insights.report.load.ISystemLoadReportProvider
 import org.gradle.api.services.BuildService
 import org.gradle.api.services.BuildServiceParameters
 import org.gradle.tooling.events.FinishEvent
@@ -9,12 +10,11 @@ import java.util.concurrent.TimeUnit
 
 abstract class SystemLoadService: BuildService<BuildServiceParameters.None>,
     OperationCompletionListener,
-    AutoCloseable
+    ISystemLoadReportProvider
 {
 
     private val registry: MetricRegistry = MetricRegistry()
     private val metricsReporter: LocalCacheReporter
-    var reporter: ISystemLoadReporter? = null
 
     init {
         registry.register(SystemLoadMetric.SystemLoadAverageMetric())
@@ -33,11 +33,7 @@ abstract class SystemLoadService: BuildService<BuildServiceParameters.None>,
 
     override fun onFinish(event: FinishEvent?) {}
 
-    override fun close() {
-        reporter?.let {
-            metricsReporter.close(it)
-        } ?: kotlin.run {
-            metricsReporter.close()
-        }
+    override fun provideSystemLoadReport(): SystemLoadReport? {
+        return metricsReporter.provideSystemLoadReport()
     }
 }

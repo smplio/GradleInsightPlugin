@@ -1,11 +1,10 @@
-package com.smplio.gradle.build.insights.reporters.html
+package com.smplio.gradle.build.insights.report.impl.html
 
-import com.smplio.gradle.build.insights.modules.load.ISystemLoadReporter
-import com.smplio.gradle.build.insights.modules.timing.models.ConfigurationInfo
-import com.smplio.gradle.build.insights.modules.timing.models.Measured
-import com.smplio.gradle.build.insights.modules.timing.models.TaskInfo
-import com.smplio.gradle.build.insights.modules.timing.report.ExecutionTimeReport
-import com.smplio.gradle.build.insights.modules.timing.report.IExecutionTimeReporter
+import com.smplio.gradle.build.insights.report.load.ISystemLoadReportReceiver
+import com.smplio.gradle.build.insights.modules.timing.report.ConfigurationTimeReport
+import com.smplio.gradle.build.insights.report.timing.IConfigurationTimeReportReceiver
+import com.smplio.gradle.build.insights.modules.timing.report.TaskExecutionTimeReport
+import com.smplio.gradle.build.insights.report.timing.ITaskExecutionTimeReportReceiver
 import org.gradle.api.Project
 import org.json.JSONArray
 import org.json.JSONObject
@@ -18,24 +17,18 @@ import kotlin.io.path.absolutePathString
 
 class HTMLReporter(
     project: Project,
-): IExecutionTimeReporter, ISystemLoadReporter {
-    private val baseReportFolder = project.layout.buildDirectory.get().dir("build-report").asFile
-    private val tasksFile = baseReportFolder.toPath().resolve("tasks.json").toFile()
-    private val systemLoadFile = baseReportFolder.toPath().resolve("systemLoad.json").toFile()
-
+): IConfigurationTimeReportReceiver, ITaskExecutionTimeReportReceiver, ISystemLoadReportReceiver {
     private val uniqueReportFolder = project.layout.buildDirectory.get().dir("build-report").dir(UUID.randomUUID().toString()).asFile
     private val styleCssPath = uniqueReportFolder.toPath().resolve("style.css").absolutePathString()
     private val reportHtmlFile = uniqueReportFolder.toPath().resolve("index.html").toFile()
 
-    private var taskExecutionTimeline: List<Measured<TaskInfo>>? = null
-    private var configurationTimeline: List<Measured<ConfigurationInfo>>? = null
+    private var configurationTimeJson: String? = null
+    private var executionTimeJson: String? = null
+    private var systemLoadJson: String? = null
 
-    override fun reportExecutionTime(executionTimeReport: ExecutionTimeReport) {
-        taskExecutionTimeline = executionTimeReport.taskExecutionTimeline
-        configurationTimeline = executionTimeReport.configurationTimeline
-
+    override fun reportTaskExecutionTime(taskExecutionTimeReport: TaskExecutionTimeReport) {
         val tasks = JSONArray()
-        for (measuredTaskInfo in executionTimeReport.taskExecutionTimeline) {
+        for (measuredTaskInfo in taskExecutionTimeReport) {
             val task = measuredTaskInfo.measuredInstance
             tasks.put(JSONObject().apply {
                 put("type", "task")
@@ -46,45 +39,35 @@ class HTMLReporter(
                 put("status_description", task.status.description)
             })
         }
-        for (measuredConfigurationInfo in executionTimeReport.configurationTimeline) {
+        executionTimeJson = tasks.toString(4)
+    }
+
+    override fun reportConfigurationTime(configurationTimeReport: ConfigurationTimeReport) {
+        val projects = JSONArray()
+        for (measuredConfigurationInfo in configurationTimeReport) {
             val configurationInfo = measuredConfigurationInfo.measuredInstance
-            tasks.put(JSONObject().apply {
+            projects.put(JSONObject().apply {
                 put("type", "configuration")
                 put("name", configurationInfo.projectName)
                 put("start", measuredConfigurationInfo.startTime)
                 put("end", measuredConfigurationInfo.endTime)
             })
         }
-
-        baseReportFolder.mkdirs()
-        tasksFile.bufferedWriter(Charsets.UTF_8).use {
-            it.write(tasks.toString(4))
-        }
-
-        tryGenerateReport()
+        configurationTimeJson = projects.toString(4)
     }
 
     override fun reportSystemLoad(measurements: ConcurrentLinkedQueue<Pair<Long, List<Pair<String, Number>>>>) {
-        val systemLoadJson = JSONArray().also {
+        systemLoadJson = JSONArray().also {
             measurements.forEach { measurementSet -> it.put(JSONObject().also {
                 it.put("timestamp", measurementSet.first)
                 for (measurement in measurementSet.second) {
                     it.put(measurement.first, measurement.second)
                 }
             })}
-        }
-
-        baseReportFolder.mkdirs()
-        systemLoadFile.bufferedWriter(Charsets.UTF_8).use {
-            it.write(systemLoadJson.toString(4))
-        }
-
-        tryGenerateReport()
+        }.toString(4)
     }
 
-    private fun tryGenerateReport() {
-        if (!tasksFile.exists() || !systemLoadFile.exists()) return
-
+    override fun submitReport() {
         uniqueReportFolder.mkdirs()
 
         val scriptJsText = javaClass.getResourceAsStream("/script.js")?.reader()?.use { it.readText() }
@@ -92,8 +75,9 @@ class HTMLReporter(
         val buildChartsJsText = javaClass.getResourceAsStream("/build_charts.js")?.reader()?.use { it.readText() }
 
         val html = javaClass.getResourceAsStream("/index.html")?.reader()?.readText()?.format(
-            tasksFile.reader().use { it.readText() },
-            systemLoadFile.reader().use { it.readText() },
+            configurationTimeJson ?: "",
+            executionTimeJson ?: "",
+            systemLoadJson ?: "",
             scriptJsText,
             chartJsText,
             buildChartsJsText,
@@ -109,9 +93,10 @@ class HTMLReporter(
             StandardCopyOption.REPLACE_EXISTING,
         )
 
-        tasksFile.delete()
-        systemLoadFile.delete()
+        configurationTimeJson = null
+        executionTimeJson = null
+        systemLoadJson = null
 
-        println("Report is available in ${reportHtmlFile.absolutePath}")
+        println("Build insights report is available in ${reportHtmlFile.absolutePath}")
     }
 }

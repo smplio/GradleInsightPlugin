@@ -2,6 +2,7 @@ package com.smplio.gradle.build.insights.modules.load
 
 import com.codahale.metrics.*
 import com.codahale.metrics.Timer
+import com.smplio.gradle.build.insights.report.load.ISystemLoadReportProvider
 import java.util.SortedMap
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.TimeUnit
@@ -18,7 +19,7 @@ class LocalCacheReporter(
     filter,
     rateUnit,
     durationUnit,
-) {
+), ISystemLoadReportProvider {
     private val measurements: ConcurrentLinkedQueue<Pair<Long, List<Pair<String, Number>>>> = ConcurrentLinkedQueue()
 
     override fun report(
@@ -42,8 +43,8 @@ class LocalCacheReporter(
         measurements.add(measurementTime to measurementsValues)
     }
 
-    fun close(reporter: ISystemLoadReporter) {
+    override fun provideSystemLoadReport(): SystemLoadReport? {
         super.close()
-        reporter.reportSystemLoad(measurements)
+        return measurements
     }
 }
