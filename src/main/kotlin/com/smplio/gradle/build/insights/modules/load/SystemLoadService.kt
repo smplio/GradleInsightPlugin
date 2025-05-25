@@ -1,6 +1,7 @@
 package com.smplio.gradle.build.insights.modules.load
 
 import com.codahale.metrics.*
+import com.smplio.gradle.build.insights.report.load.ISystemLoadReportProvider
 import org.gradle.api.services.BuildService
 import org.gradle.api.services.BuildServiceParameters
 import org.gradle.tooling.events.FinishEvent

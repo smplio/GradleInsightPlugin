@@ -3,8 +3,8 @@ package com.smplio.gradle.build.insights.modules.timing.report_providers
 import com.smplio.gradle.build.insights.modules.timing.models.Measured
 import com.smplio.gradle.build.insights.modules.timing.models.TaskInfo
 import com.smplio.gradle.build.insights.modules.timing.report.TaskExecutionTimeReport
-import com.smplio.gradle.build.insights.modules.timing.report.ITaskExecutionTimeReportProvider
-import com.smplio.gradle.build.insights.reporters.IReportProvider
+import com.smplio.gradle.build.insights.report.timing.ITaskExecutionTimeReportProvider
+import com.smplio.gradle.build.insights.report.IReportProvider
 import org.gradle.api.provider.Property
 import org.gradle.api.services.BuildService
 import org.gradle.api.services.BuildServiceParameters

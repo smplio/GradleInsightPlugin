@@ -1,6 +1,6 @@
 package com.smplio.gradle.build.insights.modules.timing
 
-import com.smplio.gradle.build.insights.modules.timing.report.IConfigurationTimeReportProvider
+import com.smplio.gradle.build.insights.report.timing.IConfigurationTimeReportProvider
 import org.gradle.api.Project
 import org.gradle.build.event.BuildEventsListenerRegistry
 import com.smplio.gradle.build.insights.modules.timing.report_providers.ConfigurationTimeReportProvider

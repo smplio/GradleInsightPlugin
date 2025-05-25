@@ -9,11 +9,11 @@ import java.net.InetAddress
 typealias ConfigurationTimeReport = List<Measured<ConfigurationInfo>>
 typealias TaskExecutionTimeReport = List<Measured<TaskInfo>>
 
-data class ExecutionReport(
+data class ExecutionStats(
     val buildHostInfo: BuildHostInfo,
     val buildInfo: Measured<BuildInfo>,
-    val configurationTimeline: ConfigurationTimeReport,
-    val taskExecutionTimeline: TaskExecutionTimeReport,
+    val configurationTimeline: ConfigurationTimeReport?,
+    val taskExecutionTimeline: TaskExecutionTimeReport?,
 )
 
 data class BuildHostInfo(

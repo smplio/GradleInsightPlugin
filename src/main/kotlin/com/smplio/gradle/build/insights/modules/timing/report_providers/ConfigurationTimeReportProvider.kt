@@ -3,7 +3,7 @@ package com.smplio.gradle.build.insights.modules.timing.report_providers
 import com.smplio.gradle.build.insights.modules.timing.models.ConfigurationInfo
 import com.smplio.gradle.build.insights.modules.timing.models.Measured
 import com.smplio.gradle.build.insights.modules.timing.report.ConfigurationTimeReport
-import com.smplio.gradle.build.insights.modules.timing.report.IConfigurationTimeReportProvider
+import com.smplio.gradle.build.insights.report.timing.IConfigurationTimeReportProvider
 import org.gradle.api.Project
 import java.util.concurrent.ConcurrentHashMap
 

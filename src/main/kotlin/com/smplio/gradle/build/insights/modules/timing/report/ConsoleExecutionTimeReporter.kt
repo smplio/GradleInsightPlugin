@@ -1,7 +1,9 @@
 package com.smplio.gradle.build.insights.modules.timing.report
+import com.smplio.gradle.build.insights.report.timing.IConfigurationTimeReportReceiver
+import com.smplio.gradle.build.insights.report.timing.ITaskExecutionTimeReportReceiver
 import java.time.Duration
 
-class ConsoleExecutionTimeReporter: IConfigurationTimeReporter, ITaskExecutionTimeReporter {
+class ConsoleExecutionTimeReporter: IConfigurationTimeReportReceiver, ITaskExecutionTimeReportReceiver {
 
     private var configurationTimeReport: ConfigurationTimeReport? = null
     private var taskExecutionTimeReport: TaskExecutionTimeReport? = null

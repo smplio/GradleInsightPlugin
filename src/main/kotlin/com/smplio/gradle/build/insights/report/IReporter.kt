@@ -1,4 +1,4 @@
-package com.smplio.gradle.build.insights.reporters
+package com.smplio.gradle.build.insights.report
 
 import java.io.Serializable
 

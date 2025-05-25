@@ -2,6 +2,7 @@ package com.smplio.gradle.build.insights.modules.load
 
 import com.codahale.metrics.*
 import com.codahale.metrics.Timer
+import com.smplio.gradle.build.insights.report.load.ISystemLoadReportProvider
 import java.util.SortedMap
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.TimeUnit
