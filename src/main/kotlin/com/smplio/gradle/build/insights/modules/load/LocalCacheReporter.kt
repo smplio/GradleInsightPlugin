@@ -18,7 +18,7 @@ class LocalCacheReporter(
     filter,
     rateUnit,
     durationUnit,
-) {
+), ISystemLoadReportProvider {
     private val measurements: ConcurrentLinkedQueue<Pair<Long, List<Pair<String, Number>>>> = ConcurrentLinkedQueue()
 
     override fun report(
@@ -42,8 +42,8 @@ class LocalCacheReporter(
         measurements.add(measurementTime to measurementsValues)
     }
 
-    fun close(reporter: ISystemLoadReporter) {
+    override fun provideSystemLoadReport(): SystemLoadReport? {
         super.close()
-        reporter.reportSystemLoad(measurements)
+        return measurements
     }
 }

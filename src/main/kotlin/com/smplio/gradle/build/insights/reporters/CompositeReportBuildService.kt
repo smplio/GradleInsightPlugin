@@ -1,61 +1,78 @@
 package com.smplio.gradle.build.insights.reporters
 
 import com.smplio.gradle.build.insights.modules.load.ISystemLoadReporter
-import com.smplio.gradle.build.insights.modules.timing.report.ExecutionTimeReport
-import com.smplio.gradle.build.insights.modules.timing.report.IExecutionTimeReporter
-import org.gradle.StartParameter
-import org.gradle.api.execution.TaskExecutionGraph
+import com.smplio.gradle.build.insights.modules.load.SystemLoadService
+import com.smplio.gradle.build.insights.modules.timing.report.IConfigurationTimeReportProvider
+import com.smplio.gradle.build.insights.modules.timing.report.IConfigurationTimeReporter
+import com.smplio.gradle.build.insights.modules.timing.report.ITaskExecutionTimeReporter
+import com.smplio.gradle.build.insights.modules.timing.report_providers.TaskTaskExecutionTimeMeasurementService
 import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.Property
 import org.gradle.api.services.BuildService
 import org.gradle.api.services.BuildServiceParameters
-import java.io.Serializable
-import java.util.concurrent.ConcurrentLinkedQueue
+import org.gradle.tooling.events.FinishEvent
+import org.gradle.tooling.events.OperationCompletionListener
 
 abstract class CompositeReportBuildService : BuildService<CompositeReportBuildService.Parameters>,
-    ISystemLoadReporter,
-    IExecutionTimeReporter,
+    OperationCompletionListener,
     AutoCloseable
 {
-
     interface Parameters: BuildServiceParameters {
         val reporters: ListProperty<IReporter>
+        val configurationTimeReportProvider: Property<IConfigurationTimeReportProvider>
+        val systemLoadReportService: Property<SystemLoadService>
+        val executionTimeReportService: Property<TaskTaskExecutionTimeMeasurementService>
     }
 
     override fun close() {
-        submitReport()
-    }
+        val reporters = parameters.reporters.orNull ?: return
+        val systemLoadService = parameters.systemLoadReportService.orNull ?: return
+        val executionTimeReportService = parameters.executionTimeReportService.orNull ?: return
+        val configurationTimeReportProvider = parameters.configurationTimeReportProvider.orNull ?: return
 
-    override fun reportExecutionTime(executionTimeReport: ExecutionTimeReport) {
-        parameters.reporters.orNull?.filterIsInstance<IExecutionTimeReporter>()?.forEach { reporter ->
-            reporter.reportExecutionTime(executionTimeReport)
+        reporters.filterIsInstance<ISystemLoadReporter>().forEach { reporter ->
+            systemLoadService.provideSystemLoadReport()?.let {
+                reporter.reportSystemLoad(it)
+            }
         }
-    }
 
-    override fun reportSystemLoad(measurements: ConcurrentLinkedQueue<Pair<Long, List<Pair<String, Number>>>>) {
-        parameters.reporters.orNull?.filterIsInstance<ISystemLoadReporter>()?.forEach { reporter ->
-            reporter.reportSystemLoad(measurements)
+        reporters.filterIsInstance<ITaskExecutionTimeReporter>().forEach { reporter ->
+            executionTimeReportService.provideTaskExecutionTimeReport()?.let {
+                reporter.reportTaskExecutionTime(it)
+            }
         }
-    }
 
-    override fun submitReport() {
-        parameters.reporters.orNull?.forEach { reporter ->
+        reporters.filterIsInstance<IConfigurationTimeReporter>().forEach { reporter ->
+            configurationTimeReportProvider.provideConfigurationTimeReport()?.let {
+                reporter.reportConfigurationTime(it)
+            }
+        }
+
+        // val reportProviders = parameters.reportProviders.orNull ?: return
+        //
+        // reportProviders.forEach { reportProvider ->
+        //     when (reportProvider) {
+        //         is ISystemLoadReportProvider -> {
+        //             reporters.filterIsInstance<ISystemLoadReporter>().forEach { reporter ->
+        //                 reportProvider.provideSystemLoadReport()?.let {
+        //                     reporter.reportSystemLoad(it)
+        //                 }
+        //             }
+        //         }
+        //         is IExecutionTimeReportProvider -> {
+        //             reporters.filterIsInstance<IExecutionTimeReporter>().forEach { reporter ->
+        //                 reportProvider.provideExecutionTimeReport()?.let {
+        //                     reporter.reportExecutionTime(it)
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
+
+        reporters.forEach { reporter ->
             reporter.submitReport()
         }
     }
 
-    class SerializableStartParameter private constructor(val taskNames: List<String>) : Serializable {
-        companion object {
-            fun create(
-                startParameter: StartParameter,
-                taskExecutionGraph: TaskExecutionGraph? = null,
-            ): SerializableStartParameter {
-                val taskNameToPathMapping = HashMap<String, String>()
-                taskExecutionGraph?.allTasks?.forEach { taskNameToPathMapping[it.name] = it.path }
-                val startTaskNames = startParameter.taskNames.map { taskName -> taskNameToPathMapping[taskName] ?: taskName }
-                return SerializableStartParameter(
-                    taskNames = startTaskNames,
-                )
-            }
-        }
-    }
+    override fun onFinish(event: FinishEvent?) {}
 }

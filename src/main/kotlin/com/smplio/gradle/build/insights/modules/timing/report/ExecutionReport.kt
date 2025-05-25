@@ -6,12 +6,14 @@ import com.smplio.gradle.build.insights.modules.timing.models.Measured
 import com.smplio.gradle.build.insights.modules.timing.models.TaskInfo
 import java.net.InetAddress
 
-data class ExecutionTimeReport(
-    val requestedTasks: List<String>,
+typealias ConfigurationTimeReport = List<Measured<ConfigurationInfo>>
+typealias TaskExecutionTimeReport = List<Measured<TaskInfo>>
+
+data class ExecutionReport(
     val buildHostInfo: BuildHostInfo,
     val buildInfo: Measured<BuildInfo>,
-    val configurationTimeline: List<Measured<ConfigurationInfo>>,
-    val taskExecutionTimeline: List<Measured<TaskInfo>>,
+    val configurationTimeline: ConfigurationTimeReport,
+    val taskExecutionTimeline: TaskExecutionTimeReport,
 )
 
 data class BuildHostInfo(

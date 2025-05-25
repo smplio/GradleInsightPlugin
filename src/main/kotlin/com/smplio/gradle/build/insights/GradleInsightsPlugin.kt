@@ -3,7 +3,6 @@ package com.smplio.gradle.build.insights
 import com.smplio.gradle.build.insights.modules.graph.GraphBuilder
 import com.smplio.gradle.build.insights.modules.load.SystemLoadModule
 import com.smplio.gradle.build.insights.modules.timing.ExecutionTimeMeasurementModule
-import com.smplio.gradle.build.insights.modules.timing.ExecutionTimeMeasurementService
 import com.smplio.gradle.build.insights.reporters.CompositeReportBuildService
 import com.smplio.gradle.build.insights.reporters.html.HTMLReporter
 import org.gradle.api.Plugin
@@ -23,31 +22,41 @@ class GradleInsightsPlugin @Inject constructor(private val registry: BuildEvents
             project,
         )
 
+        val executionTimeMeasurementModule = ExecutionTimeMeasurementModule(
+            project,
+            registry,
+            pluginConfig.getExecutionTimeMeasurementConfiguration(),
+        )
+        executionTimeMeasurementModule.initialize()
+
+        val systemLoadModule = SystemLoadModule(
+            project,
+            registry,
+        )
+        systemLoadModule.initialize()
+
         val compositeReportBuildService = project.gradle.sharedServices.registerIfAbsent(
             CompositeReportBuildService::class.java.simpleName,
             CompositeReportBuildService::class.java,
-        ) {
-            it.parameters.reporters.set(mutableListOf(
+        ) { buildServiceSpec ->
+            buildServiceSpec.parameters.reporters.set(mutableListOf(
                 pluginConfig.getExecutionTimeMeasurementConfiguration().executionTimeReporter.get(),
             ).also { list ->
                 if (pluginConfig.gatherHtmlReport.get()) {
                     list.add(HTMLReporter(project))
                 }
             })
+            executionTimeMeasurementModule.getConfigurationTimeReportProvider().let {
+                buildServiceSpec.parameters.configurationTimeReportProvider.set(it)
+            }
+            executionTimeMeasurementModule.getExecutionTimeReportProvider()?.let {
+                buildServiceSpec.parameters.executionTimeReportService.set(it)
+            }
+            systemLoadModule.getSystemLoadReportProvider()?.let {
+                buildServiceSpec.parameters.systemLoadReportService.set(it)
+            }
         }
-
-        ExecutionTimeMeasurementModule(
-            project,
-            registry,
-            pluginConfig.getExecutionTimeMeasurementConfiguration(),
-            compositeReportBuildService,
-        ).initialize()
-
-        SystemLoadModule(
-            project,
-            registry,
-            compositeReportBuildService,
-        ).initialize()
+        registry.onTaskCompletion(compositeReportBuildService)
 
         GraphBuilder().also {
             it.buildProjectDependencyGraph(project)

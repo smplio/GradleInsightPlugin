@@ -1,15 +1,10 @@
-package com.smplio.gradle.build.insights.modules.timing
+package com.smplio.gradle.build.insights.modules.timing.report_providers
 
-import com.smplio.gradle.build.insights.modules.timing.models.BuildInfo
-import com.smplio.gradle.build.insights.modules.timing.models.ConfigurationInfo
 import com.smplio.gradle.build.insights.modules.timing.models.Measured
 import com.smplio.gradle.build.insights.modules.timing.models.TaskInfo
-import com.smplio.gradle.build.insights.modules.timing.report.BuildHostInfo
-import com.smplio.gradle.build.insights.modules.timing.report.ExecutionTimeReport
-import com.smplio.gradle.build.insights.reporters.CompositeReportBuildService
-import org.gradle.StartParameter
-import org.gradle.api.execution.TaskExecutionGraph
-import org.gradle.api.provider.ListProperty
+import com.smplio.gradle.build.insights.modules.timing.report.TaskExecutionTimeReport
+import com.smplio.gradle.build.insights.modules.timing.report.ITaskExecutionTimeReportProvider
+import com.smplio.gradle.build.insights.reporters.IReportProvider
 import org.gradle.api.provider.Property
 import org.gradle.api.services.BuildService
 import org.gradle.api.services.BuildServiceParameters
@@ -19,19 +14,16 @@ import org.gradle.tooling.events.task.TaskFailureResult
 import org.gradle.tooling.events.task.TaskFinishEvent
 import org.gradle.tooling.events.task.TaskSkippedResult
 import org.gradle.tooling.events.task.TaskSuccessResult
-import java.io.Serializable
 import java.util.concurrent.ConcurrentLinkedQueue
 
-abstract class ExecutionTimeMeasurementService : BuildService<ExecutionTimeMeasurementService.Parameters>,
+abstract class TaskTaskExecutionTimeMeasurementService : BuildService<TaskTaskExecutionTimeMeasurementService.Parameters>,
     OperationCompletionListener,
-    AutoCloseable
+    ITaskExecutionTimeReportProvider,
+    IReportProvider
 {
 
     interface Parameters: BuildServiceParameters {
-        val startParameters: Property<SerializableStartParameter>
-        val reporter: Property<CompositeReportBuildService>
         val buildStartTime: Property<Long>
-        val configurationsTimeline: ListProperty<Measured<ConfigurationInfo>>
     }
 
     private var firstTaskStartTime: Long? = null
@@ -88,46 +80,15 @@ abstract class ExecutionTimeMeasurementService : BuildService<ExecutionTimeMeasu
 
             taskExecutionTimeline.add(
                 Measured(
-                measuredInstance = taskInfo,
-                startTime = result.startTime,
-                endTime = result.endTime,
-            ))
-        }
-    }
-
-    override fun close() {
-        val lastExecutedTaskEndTime = lastTaskEndTime ?: -1
-        val report = ExecutionTimeReport(
-            requestedTasks = parameters.startParameters.get().taskNames,
-            buildHostInfo = BuildHostInfo(),
-            buildInfo = Measured(
-                measuredInstance = BuildInfo(
-                    status = BuildInfo.ExecutionStatus.Success().takeIf {
-                        taskExecutionTimeline.isNotEmpty() && taskExecutionTimeline.none { it.measuredInstance.status is TaskInfo.ExecutionStatus.Failed }
-                    } ?: BuildInfo.ExecutionStatus.Failed()
-                ),
-                startTime = parameters.buildStartTime.get(),
-                endTime = lastExecutedTaskEndTime,
-            ),
-            configurationTimeline = parameters.configurationsTimeline.get(),
-            taskExecutionTimeline = taskExecutionTimeline.toList(),
-        )
-        parameters.reporter.get().reportExecutionTime(report)
-    }
-
-    class SerializableStartParameter private constructor(val taskNames: List<String>) : Serializable {
-        companion object {
-            fun create(
-                startParameter: StartParameter,
-                taskExecutionGraph: TaskExecutionGraph? = null,
-            ): SerializableStartParameter {
-                val taskNameToPathMapping = HashMap<String, String>()
-                taskExecutionGraph?.allTasks?.forEach { taskNameToPathMapping[it.name] = it.path }
-                val startTaskNames = startParameter.taskNames.map { taskName -> taskNameToPathMapping[taskName] ?: taskName }
-                return SerializableStartParameter(
-                    taskNames = startTaskNames,
+                    measuredInstance = taskInfo,
+                    startTime = result.startTime,
+                    endTime = result.endTime,
                 )
-            }
+            )
         }
+    }
+
+    override fun provideTaskExecutionTimeReport(): TaskExecutionTimeReport? {
+        return taskExecutionTimeline.toList()
     }
 }
