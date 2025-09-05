@@ -7,14 +7,15 @@ const minTime =  Math.min(...labels);
 
 const heapMaxMetrics = systemStats.map(value => value.heapMax);
 const heapUsedMetrics = systemStats.map(value => value.heapUsed);
-const systemLoadAverageMetrics = systemStats.map(value => value.systemLoadAverage);
+const gradleJvmCpuPercentMetrics = systemStats.map(value => value.gradleJvmCpuPercent);
+const gradleDescendantsCpuPercentMetrics = systemStats.map(value => value.gradleDescendantsCpuPercent);
 
 function formatBytes(bytes, decimals = 2) {
-    if (!+bytes) return '0 Bytes'
+    if (!+bytes) return '0 B'
 
     const k = 1024
     const dm = decimals < 0 ? 0 : decimals
-    const sizes = ['Bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB']
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
 
     const i = Math.floor(Math.log(bytes) / Math.log(k))
 
@@ -27,12 +28,21 @@ new Chart(cpuChart, {
         labels: labels.map(value => Math.round((value - minTime) / 1000) + 's'),
         datasets: [
             {
-                label: 'CPU usage',
-                data: systemLoadAverageMetrics,
-                fill: false,
-                borderColor: 'rgb(75, 192, 192)',
+                label: 'Gradle CPU usage',
+                data: gradleJvmCpuPercentMetrics,
+                fill: true,
+                borderColor: 'rgb(85,160,223)',
+                backgroundColor: 'rgb(85,180,223)',
                 tension: 0.1
-            }
+            },
+            {
+                label: 'Children CPU usage',
+                data: gradleDescendantsCpuPercentMetrics,
+                fill: true,
+                borderColor: 'rgb(84,105,220)',
+                backgroundColor: 'rgb(84,125,220)',
+                tension: 0.1,
+            },
         ],
     },
     options: {
@@ -45,9 +55,13 @@ new Chart(cpuChart, {
             }
         },
         plugins: {
+            stacked: true,
             legend: {
                 align: 'start',
-            }
+            },
+            tooltip: {
+                mode: 'index',
+            },
         }
     }
 });
@@ -86,6 +100,7 @@ new Chart(memoryChart, {
                 align: 'start',
             },
             tooltip: {
+                mode: 'index',
                 callbacks: {
                     label: function(context) {
                         let label = context.dataset.label || '';

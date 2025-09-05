@@ -16,7 +16,7 @@ import org.gradle.tooling.events.task.TaskSkippedResult
 import org.gradle.tooling.events.task.TaskSuccessResult
 import java.util.concurrent.ConcurrentLinkedQueue
 
-abstract class TaskTaskExecutionTimeMeasurementService : BuildService<TaskTaskExecutionTimeMeasurementService.Parameters>,
+abstract class TaskExecutionTimeMeasurementService : BuildService<TaskExecutionTimeMeasurementService.Parameters>,
     OperationCompletionListener,
     ITaskExecutionTimeReportProvider,
     IReportProvider

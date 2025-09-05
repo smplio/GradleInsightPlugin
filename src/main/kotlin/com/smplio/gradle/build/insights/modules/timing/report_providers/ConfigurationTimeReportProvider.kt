@@ -6,14 +6,17 @@ import com.smplio.gradle.build.insights.modules.timing.report.ConfigurationTimeR
 import com.smplio.gradle.build.insights.report.timing.IConfigurationTimeReportProvider
 import org.gradle.api.Project
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentLinkedQueue
 
 class ConfigurationTimeReportProvider: IConfigurationTimeReportProvider {
 
     private val configurationStartTimes = ConcurrentHashMap<String, Long>()
-    private val configurationTimeline = mutableListOf<Measured<ConfigurationInfo>>()
+    private val configurationTimeline = ConcurrentLinkedQueue<Measured<ConfigurationInfo>>()
 
     override fun provideConfigurationTimeReport(): ConfigurationTimeReport? {
-        return configurationTimeline
+        println("${this}: Number of reports ${configurationTimeline.size}")
+
+        return configurationTimeline.toList()
     }
 
     fun onBeforeProject(project: Project) {
@@ -29,5 +32,6 @@ class ConfigurationTimeReportProvider: IConfigurationTimeReportProvider {
             startTime = startTime,
             endTime = System.currentTimeMillis(),
         ))
+        println("${this}: Added new configuration, currentSize: ${configurationTimeline.size}")
     }
 }

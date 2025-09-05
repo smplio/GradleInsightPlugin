@@ -10,7 +10,7 @@ import com.smplio.gradle.build.insights.modules.timing.report.ExecutionStats
 import com.smplio.gradle.build.insights.report.timing.IConfigurationTimeReportProvider
 import com.smplio.gradle.build.insights.report.timing.IConfigurationTimeReportReceiver
 import com.smplio.gradle.build.insights.report.timing.ITaskExecutionTimeReportReceiver
-import com.smplio.gradle.build.insights.modules.timing.report_providers.TaskTaskExecutionTimeMeasurementService
+import com.smplio.gradle.build.insights.modules.timing.report_providers.TaskExecutionTimeMeasurementService
 import com.smplio.gradle.build.insights.report.execution.IExecutionStatsReceiver
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
@@ -29,7 +29,7 @@ abstract class CompositeReportBuildService : BuildService<CompositeReportBuildSe
         val reporters: ListProperty<IReporter>
         val configurationTimeReportProvider: Property<IConfigurationTimeReportProvider>
         val systemLoadReportService: Property<SystemLoadService>
-        val executionTimeReportService: Property<TaskTaskExecutionTimeMeasurementService>
+        val executionTimeReportService: Property<TaskExecutionTimeMeasurementService>
     }
 
     override fun close() {
@@ -52,6 +52,7 @@ abstract class CompositeReportBuildService : BuildService<CompositeReportBuildSe
 
         reporters.filterIsInstance<IConfigurationTimeReportReceiver>().forEach { reporter ->
             configurationTimeReportProvider.provideConfigurationTimeReport()?.let {
+                println("Configuration time report size (IConfigurationTimeReportReceiver): ${it.size}")
                 reporter.reportConfigurationTime(it)
             }
         }
@@ -59,6 +60,9 @@ abstract class CompositeReportBuildService : BuildService<CompositeReportBuildSe
         reporters.filterIsInstance<IExecutionStatsReceiver>().forEach { reporter ->
             val configurationTimeline = configurationTimeReportProvider.provideConfigurationTimeReport()
             val taskExecutionTimeline = executionTimeReportService.provideTaskExecutionTimeReport()
+
+            println("Configuration time report size (IExecutionStatsReceiver): ${configurationTimeline?.size}")
+
             reporter.reportExecutionStats(ExecutionStats(
                 buildHostInfo = BuildHostInfo(),
                 buildInfo = Measured(

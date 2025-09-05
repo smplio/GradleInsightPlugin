@@ -35,12 +35,15 @@ class GradleInsightsPlugin @Inject constructor(private val registry: BuildEvents
         )
         systemLoadModule.initialize()
 
+        val executionStatsReporter = pluginConfig.getExecutionTimeMeasurementConfiguration().executionStatsReporter.get()
+        println("Execution stats reporter is ${executionStatsReporter.javaClass.simpleName}")
+
         val compositeReportBuildService = project.gradle.sharedServices.registerIfAbsent(
             CompositeReportBuildService::class.java.simpleName,
             CompositeReportBuildService::class.java,
         ) { buildServiceSpec ->
             buildServiceSpec.parameters.reporters.set(mutableListOf(
-                pluginConfig.getExecutionTimeMeasurementConfiguration().executionTimeReporter.get(),
+                executionStatsReporter,
             ).also { list ->
                 if (pluginConfig.gatherHtmlReport.get()) {
                     list.add(HTMLReporter(project))

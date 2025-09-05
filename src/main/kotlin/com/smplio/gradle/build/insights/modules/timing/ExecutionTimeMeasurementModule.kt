@@ -4,7 +4,7 @@ import com.smplio.gradle.build.insights.report.timing.IConfigurationTimeReportPr
 import org.gradle.api.Project
 import org.gradle.build.event.BuildEventsListenerRegistry
 import com.smplio.gradle.build.insights.modules.timing.report_providers.ConfigurationTimeReportProvider
-import com.smplio.gradle.build.insights.modules.timing.report_providers.TaskTaskExecutionTimeMeasurementService
+import com.smplio.gradle.build.insights.modules.timing.report_providers.TaskExecutionTimeMeasurementService
 import org.gradle.api.provider.Provider
 
 class ExecutionTimeMeasurementModule(
@@ -13,7 +13,7 @@ class ExecutionTimeMeasurementModule(
     private val configuration: ExecutionTimeMeasurementConfiguration,
 ) {
 
-    private var taskExecutionTimeMeasurementService: Provider<TaskTaskExecutionTimeMeasurementService>? = null
+    private var taskExecutionTimeMeasurementService: Provider<TaskExecutionTimeMeasurementService>? = null
     private val configurationTimeReportProvider = ConfigurationTimeReportProvider()
 
     fun initialize() {
@@ -29,8 +29,8 @@ class ExecutionTimeMeasurementModule(
 
         if (configuration.enabled.get()) {
             taskExecutionTimeMeasurementService = project.gradle.sharedServices.registerIfAbsent(
-                TaskTaskExecutionTimeMeasurementService::class.java.simpleName,
-                TaskTaskExecutionTimeMeasurementService::class.java,
+                TaskExecutionTimeMeasurementService::class.java.simpleName,
+                TaskExecutionTimeMeasurementService::class.java,
             ) {
                 it.parameters.buildStartTime.set(buildStartTime)
             }.also {
@@ -43,7 +43,7 @@ class ExecutionTimeMeasurementModule(
         return configurationTimeReportProvider
     }
 
-    fun getExecutionTimeReportProvider(): Provider<TaskTaskExecutionTimeMeasurementService>? {
+    fun getExecutionTimeReportProvider(): Provider<TaskExecutionTimeMeasurementService>? {
         return taskExecutionTimeMeasurementService
     }
 }
