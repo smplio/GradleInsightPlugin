@@ -61,6 +61,20 @@ new Chart(cpuChart, {
             },
             tooltip: {
                 mode: 'index',
+                callbacks: {
+                    label: function(context) {
+                        let label = context.dataset.label || '';
+
+                        if (label) {
+                            label += ': ';
+                        }
+                        if (context.parsed.y !== null) {
+                            label += context.parsed.y;
+                        }
+                        label += '%';
+                        return label;
+                    }
+                }
             },
         }
     }
