@@ -21,6 +21,9 @@ abstract class SystemLoadService: BuildService<BuildServiceParameters.None>,
         registry.register(SystemLoadMetric.HeapUsedMetric())
         registry.register(SystemLoadMetric.HeapMaxMetric())
 
+        registry.register(SystemLoadMetric.GradleJvmCpuPercentMetric())
+        registry.register(SystemLoadMetric.GradleDescendantsCpuPercentMetric())
+
         metricsReporter = LocalCacheReporter(
             registry,
             "LocalCacheRegistry",

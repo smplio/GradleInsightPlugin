@@ -1,12 +1,22 @@
 package com.smplio.gradle.build.insights.modules.timing.report
+import com.smplio.gradle.build.insights.report.execution.IExecutionStatsReceiver
 import com.smplio.gradle.build.insights.report.timing.IConfigurationTimeReportReceiver
 import com.smplio.gradle.build.insights.report.timing.ITaskExecutionTimeReportReceiver
 import java.time.Duration
 
-class ConsoleExecutionTimeReporter: IConfigurationTimeReportReceiver, ITaskExecutionTimeReportReceiver {
+class ConsoleExecutionTimeReporter:
+    IExecutionStatsReceiver,
+    IConfigurationTimeReportReceiver,
+    ITaskExecutionTimeReportReceiver
+{
 
     private var configurationTimeReport: ConfigurationTimeReport? = null
     private var taskExecutionTimeReport: TaskExecutionTimeReport? = null
+
+    override fun reportExecutionStats(stats: ExecutionStats) {
+        stats.configurationTimeline?.let { reportConfigurationTime(it) }
+        stats.taskExecutionTimeline?.let { reportTaskExecutionTime(it) }
+    }
 
     override fun reportConfigurationTime(configurationTimeReport: ConfigurationTimeReport) {
         this.configurationTimeReport = configurationTimeReport
@@ -24,7 +34,7 @@ class ConsoleExecutionTimeReporter: IConfigurationTimeReportReceiver, ITaskExecu
     override fun submitReport() {
         var firstConfigurationStartTime = 0L
         var lastTaskEndTime = 0L
-        configurationTimeReport?.let { report ->
+        configurationTimeReport?.takeIf { it.isNotEmpty() }?.let { report ->
             println("Configuration time:")
             firstConfigurationStartTime = report.minOf { it.startTime }
             val lastConfigurationEndTime = report.maxOf { it.endTime }
@@ -40,7 +50,7 @@ class ConsoleExecutionTimeReporter: IConfigurationTimeReportReceiver, ITaskExecu
             }
         }
 
-        taskExecutionTimeReport?.let { report ->
+        taskExecutionTimeReport?.takeIf { it.isNotEmpty() }?.let { report ->
             println("Task execution time:")
             val firstTaskStartTime = report.minOf { it.startTime }
 

@@ -7,13 +7,14 @@ import com.smplio.gradle.build.insights.modules.timing.models.Measured
 import com.smplio.gradle.build.insights.modules.timing.models.TaskInfo
 import com.smplio.gradle.build.insights.modules.timing.report.BuildHostInfo
 import com.smplio.gradle.build.insights.modules.timing.report.ExecutionStats
-import com.smplio.gradle.build.insights.report.timing.IConfigurationTimeReportProvider
+import com.smplio.gradle.build.insights.modules.timing.report_providers.ConfigurationTimeMeasurementService
 import com.smplio.gradle.build.insights.report.timing.IConfigurationTimeReportReceiver
 import com.smplio.gradle.build.insights.report.timing.ITaskExecutionTimeReportReceiver
-import com.smplio.gradle.build.insights.modules.timing.report_providers.TaskTaskExecutionTimeMeasurementService
+import com.smplio.gradle.build.insights.modules.timing.report_providers.TaskExecutionTimeMeasurementService
 import com.smplio.gradle.build.insights.report.execution.IExecutionStatsReceiver
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
+import org.gradle.api.provider.Provider
 import org.gradle.api.services.BuildService
 import org.gradle.api.services.BuildServiceParameters
 import org.gradle.tooling.events.FinishEvent
@@ -26,17 +27,17 @@ abstract class CompositeReportBuildService : BuildService<CompositeReportBuildSe
     AutoCloseable
 {
     interface Parameters: BuildServiceParameters {
-        val reporters: ListProperty<IReporter>
-        val configurationTimeReportProvider: Property<IConfigurationTimeReportProvider>
+        val reporters: ListProperty<Provider<IReporter>>
         val systemLoadReportService: Property<SystemLoadService>
-        val executionTimeReportService: Property<TaskTaskExecutionTimeMeasurementService>
+        val configurationTimeReportService: Property<ConfigurationTimeMeasurementService>
+        val executionTimeReportService: Property<TaskExecutionTimeMeasurementService>
     }
 
     override fun close() {
-        val reporters = parameters.reporters.orNull ?: return
+        val reporters = parameters.reporters.orNull?.map { it.get() } ?: return
         val systemLoadService = parameters.systemLoadReportService.orNull ?: return
         val executionTimeReportService = parameters.executionTimeReportService.orNull ?: return
-        val configurationTimeReportProvider = parameters.configurationTimeReportProvider.orNull ?: return
+        val configurationTimeReportProvider = parameters.configurationTimeReportService.orNull ?: return
 
         reporters.filterIsInstance<ISystemLoadReportReceiver>().forEach { reporter ->
             systemLoadService.provideSystemLoadReport()?.let {
@@ -59,6 +60,7 @@ abstract class CompositeReportBuildService : BuildService<CompositeReportBuildSe
         reporters.filterIsInstance<IExecutionStatsReceiver>().forEach { reporter ->
             val configurationTimeline = configurationTimeReportProvider.provideConfigurationTimeReport()
             val taskExecutionTimeline = executionTimeReportService.provideTaskExecutionTimeReport()
+
             reporter.reportExecutionStats(ExecutionStats(
                 buildHostInfo = BuildHostInfo(),
                 buildInfo = Measured(

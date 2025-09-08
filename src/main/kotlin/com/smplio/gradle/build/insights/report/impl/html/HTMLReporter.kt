@@ -2,8 +2,10 @@ package com.smplio.gradle.build.insights.report.impl.html
 
 import com.smplio.gradle.build.insights.report.load.ISystemLoadReportReceiver
 import com.smplio.gradle.build.insights.modules.timing.report.ConfigurationTimeReport
+import com.smplio.gradle.build.insights.modules.timing.report.ExecutionStats
 import com.smplio.gradle.build.insights.report.timing.IConfigurationTimeReportReceiver
 import com.smplio.gradle.build.insights.modules.timing.report.TaskExecutionTimeReport
+import com.smplio.gradle.build.insights.report.execution.IExecutionStatsReceiver
 import com.smplio.gradle.build.insights.report.timing.ITaskExecutionTimeReportReceiver
 import org.gradle.api.Project
 import org.json.JSONArray
@@ -17,7 +19,11 @@ import kotlin.io.path.absolutePathString
 
 class HTMLReporter(
     project: Project,
-): IConfigurationTimeReportReceiver, ITaskExecutionTimeReportReceiver, ISystemLoadReportReceiver {
+) : IExecutionStatsReceiver,
+    IConfigurationTimeReportReceiver,
+    ITaskExecutionTimeReportReceiver,
+    ISystemLoadReportReceiver
+{
     private val uniqueReportFolder = project.layout.buildDirectory.get().dir("build-report").dir(UUID.randomUUID().toString()).asFile
     private val styleCssPath = uniqueReportFolder.toPath().resolve("style.css").absolutePathString()
     private val reportHtmlFile = uniqueReportFolder.toPath().resolve("index.html").toFile()
@@ -25,6 +31,11 @@ class HTMLReporter(
     private var configurationTimeJson: String? = null
     private var executionTimeJson: String? = null
     private var systemLoadJson: String? = null
+
+    override fun reportExecutionStats(stats: ExecutionStats) {
+        stats.configurationTimeline?.let { reportConfigurationTime(it) }
+        stats.taskExecutionTimeline?.let { reportTaskExecutionTime(it) }
+    }
 
     override fun reportTaskExecutionTime(taskExecutionTimeReport: TaskExecutionTimeReport) {
         val tasks = JSONArray()
@@ -83,20 +94,22 @@ class HTMLReporter(
             buildChartsJsText,
         )
 
-        reportHtmlFile.bufferedWriter(Charsets.UTF_8).use {
-            it.write(html)
+        reportHtmlFile.bufferedWriter(Charsets.UTF_8).use { writer ->
+            html?.let { writer.write(it) }
         }
 
-        Files.copy(
-            javaClass.getResourceAsStream("/style.css"),
-            Path(styleCssPath),
-            StandardCopyOption.REPLACE_EXISTING,
-        )
+        javaClass.getResourceAsStream("/style.css")?.let { resourceStream ->
+            Files.copy(
+                resourceStream,
+                Path(styleCssPath),
+                StandardCopyOption.REPLACE_EXISTING,
+            )
+        }
 
         configurationTimeJson = null
         executionTimeJson = null
         systemLoadJson = null
 
-        println("Build insights report is available in ${reportHtmlFile.absolutePath}")
+        println("Build insights report is available in file://${reportHtmlFile.absolutePath}")
     }
 }

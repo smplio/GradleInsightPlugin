@@ -1,10 +1,9 @@
 package com.smplio.gradle.build.insights.modules.timing
 
-import com.smplio.gradle.build.insights.report.timing.IConfigurationTimeReportProvider
+import com.smplio.gradle.build.insights.modules.timing.report_providers.ConfigurationTimeMeasurementService
 import org.gradle.api.Project
 import org.gradle.build.event.BuildEventsListenerRegistry
-import com.smplio.gradle.build.insights.modules.timing.report_providers.ConfigurationTimeReportProvider
-import com.smplio.gradle.build.insights.modules.timing.report_providers.TaskTaskExecutionTimeMeasurementService
+import com.smplio.gradle.build.insights.modules.timing.report_providers.TaskExecutionTimeMeasurementService
 import org.gradle.api.provider.Provider
 
 class ExecutionTimeMeasurementModule(
@@ -13,24 +12,34 @@ class ExecutionTimeMeasurementModule(
     private val configuration: ExecutionTimeMeasurementConfiguration,
 ) {
 
-    private var taskExecutionTimeMeasurementService: Provider<TaskTaskExecutionTimeMeasurementService>? = null
-    private val configurationTimeReportProvider = ConfigurationTimeReportProvider()
+    private var configurationTimeMeasurementService: Provider<ConfigurationTimeMeasurementService>? = null
+    private var taskExecutionTimeMeasurementService: Provider<TaskExecutionTimeMeasurementService>? = null
 
     fun initialize() {
         val buildStartTime = System.currentTimeMillis()
 
-        project.gradle.beforeProject {
-            configurationTimeReportProvider.onBeforeProject(it)
-        }
+        if (configuration.enabled.get()) {
+            configurationTimeMeasurementService = project.gradle.sharedServices.registerIfAbsent(
+                ConfigurationTimeMeasurementService::class.java.simpleName,
+                ConfigurationTimeMeasurementService::class.java,
+            ) {}.also {
+                registry.onTaskCompletion(it)
+            }
 
-        project.gradle.afterProject {
-            configurationTimeReportProvider.onAfterProject(it)
+            configurationTimeMeasurementService?.get()?.onBeforeProject(project)
+
+            project.gradle.beforeProject {
+                configurationTimeMeasurementService?.get()?.onBeforeProject(it)
+            }
+            project.gradle.afterProject {
+                configurationTimeMeasurementService?.get()?.onAfterProject(it)
+            }
         }
 
         if (configuration.enabled.get()) {
             taskExecutionTimeMeasurementService = project.gradle.sharedServices.registerIfAbsent(
-                TaskTaskExecutionTimeMeasurementService::class.java.simpleName,
-                TaskTaskExecutionTimeMeasurementService::class.java,
+                TaskExecutionTimeMeasurementService::class.java.simpleName,
+                TaskExecutionTimeMeasurementService::class.java,
             ) {
                 it.parameters.buildStartTime.set(buildStartTime)
             }.also {
@@ -39,11 +48,11 @@ class ExecutionTimeMeasurementModule(
         }
     }
 
-    fun getConfigurationTimeReportProvider(): IConfigurationTimeReportProvider {
-        return configurationTimeReportProvider
+    fun getConfigurationTimeTimeMeasurementService(): Provider<ConfigurationTimeMeasurementService>? {
+        return configurationTimeMeasurementService
     }
 
-    fun getExecutionTimeReportProvider(): Provider<TaskTaskExecutionTimeMeasurementService>? {
+    fun getExecutionTimeTimeMeasurementService(): Provider<TaskExecutionTimeMeasurementService>? {
         return taskExecutionTimeMeasurementService
     }
 }

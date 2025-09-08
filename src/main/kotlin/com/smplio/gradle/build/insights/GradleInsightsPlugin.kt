@@ -4,10 +4,12 @@ import com.smplio.gradle.build.insights.modules.graph.GraphBuilder
 import com.smplio.gradle.build.insights.modules.load.SystemLoadModule
 import com.smplio.gradle.build.insights.modules.timing.ExecutionTimeMeasurementModule
 import com.smplio.gradle.build.insights.report.CompositeReportBuildService
+import com.smplio.gradle.build.insights.report.IReporter
 import com.smplio.gradle.build.insights.report.impl.html.HTMLReporter
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.ReportingBasePlugin
+import org.gradle.api.provider.Provider
 import org.gradle.build.event.BuildEventsListenerRegistry
 import javax.inject.Inject
 
@@ -39,17 +41,17 @@ class GradleInsightsPlugin @Inject constructor(private val registry: BuildEvents
             CompositeReportBuildService::class.java.simpleName,
             CompositeReportBuildService::class.java,
         ) { buildServiceSpec ->
-            buildServiceSpec.parameters.reporters.set(mutableListOf(
-                pluginConfig.getExecutionTimeMeasurementConfiguration().executionTimeReporter.get(),
+            buildServiceSpec.parameters.reporters.set(mutableListOf<Provider<IReporter>>(
+                pluginConfig.getExecutionTimeMeasurementConfiguration().executionStatsReporter as Provider<IReporter>,
             ).also { list ->
                 if (pluginConfig.gatherHtmlReport.get()) {
-                    list.add(HTMLReporter(project))
+                    list.add(project.provider {  HTMLReporter(project) })
                 }
             })
-            executionTimeMeasurementModule.getConfigurationTimeReportProvider().let {
-                buildServiceSpec.parameters.configurationTimeReportProvider.set(it)
+            executionTimeMeasurementModule.getConfigurationTimeTimeMeasurementService()?.let {
+                buildServiceSpec.parameters.configurationTimeReportService.set(it)
             }
-            executionTimeMeasurementModule.getExecutionTimeReportProvider()?.let {
+            executionTimeMeasurementModule.getExecutionTimeTimeMeasurementService()?.let {
                 buildServiceSpec.parameters.executionTimeReportService.set(it)
             }
             systemLoadModule.getSystemLoadReportProvider()?.let {

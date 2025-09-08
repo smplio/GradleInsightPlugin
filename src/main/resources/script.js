@@ -126,25 +126,7 @@ function calculateRows(tasks) {
     ]);
 
     sweepLineTasks.sort((a, b) => {
-        if (a.time !== b.time) {
-            return a.time - b.time; // Sort by time
-        }
-
-        // If times are equal, end events come before start events
-        if (a.isStart && !b.isStart) {
-            return -1;
-        }
-        if (!a.isStart && b.isStart) {
-            return 1;
-        }
-
-        // If both are start events at the same time, the one with longer duration comes first
-        if (a.isStart && b.isStart) {
-            return (b.task.end - b.task.start) - (a.task.end - a.task.start);
-        }
-
-        // If both are end events at the same time, maintain order
-        return 0;
+        return a.time - b.time; // Sort by time
     })
 
     let maxHeight = 0;
