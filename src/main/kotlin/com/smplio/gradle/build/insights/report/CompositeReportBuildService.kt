@@ -7,7 +7,7 @@ import com.smplio.gradle.build.insights.modules.timing.models.Measured
 import com.smplio.gradle.build.insights.modules.timing.models.TaskInfo
 import com.smplio.gradle.build.insights.modules.timing.report.BuildHostInfo
 import com.smplio.gradle.build.insights.modules.timing.report.ExecutionStats
-import com.smplio.gradle.build.insights.report.timing.IConfigurationTimeReportProvider
+import com.smplio.gradle.build.insights.modules.timing.report_providers.ConfigurationTimeMeasurementService
 import com.smplio.gradle.build.insights.report.timing.IConfigurationTimeReportReceiver
 import com.smplio.gradle.build.insights.report.timing.ITaskExecutionTimeReportReceiver
 import com.smplio.gradle.build.insights.modules.timing.report_providers.TaskExecutionTimeMeasurementService
@@ -27,8 +27,8 @@ abstract class CompositeReportBuildService : BuildService<CompositeReportBuildSe
 {
     interface Parameters: BuildServiceParameters {
         val reporters: ListProperty<IReporter>
-        val configurationTimeReportProvider: Property<IConfigurationTimeReportProvider>
         val systemLoadReportService: Property<SystemLoadService>
+        val configurationTimeReportService: Property<ConfigurationTimeMeasurementService>
         val executionTimeReportService: Property<TaskExecutionTimeMeasurementService>
     }
 
@@ -36,7 +36,7 @@ abstract class CompositeReportBuildService : BuildService<CompositeReportBuildSe
         val reporters = parameters.reporters.orNull ?: return
         val systemLoadService = parameters.systemLoadReportService.orNull ?: return
         val executionTimeReportService = parameters.executionTimeReportService.orNull ?: return
-        val configurationTimeReportProvider = parameters.configurationTimeReportProvider.orNull ?: return
+        val configurationTimeReportProvider = parameters.configurationTimeReportService.orNull ?: return
 
         reporters.filterIsInstance<ISystemLoadReportReceiver>().forEach { reporter ->
             systemLoadService.provideSystemLoadReport()?.let {
@@ -52,7 +52,6 @@ abstract class CompositeReportBuildService : BuildService<CompositeReportBuildSe
 
         reporters.filterIsInstance<IConfigurationTimeReportReceiver>().forEach { reporter ->
             configurationTimeReportProvider.provideConfigurationTimeReport()?.let {
-                println("Configuration time report size (IConfigurationTimeReportReceiver): ${it.size}")
                 reporter.reportConfigurationTime(it)
             }
         }
@@ -60,8 +59,6 @@ abstract class CompositeReportBuildService : BuildService<CompositeReportBuildSe
         reporters.filterIsInstance<IExecutionStatsReceiver>().forEach { reporter ->
             val configurationTimeline = configurationTimeReportProvider.provideConfigurationTimeReport()
             val taskExecutionTimeline = executionTimeReportService.provideTaskExecutionTimeReport()
-
-            println("Configuration time report size (IExecutionStatsReceiver): ${configurationTimeline?.size}")
 
             reporter.reportExecutionStats(ExecutionStats(
                 buildHostInfo = BuildHostInfo(),

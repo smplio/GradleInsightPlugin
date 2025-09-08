@@ -54,7 +54,6 @@ class HTMLReporter(
     }
 
     override fun reportConfigurationTime(configurationTimeReport: ConfigurationTimeReport) {
-        println("Configuration time (HTMLReporter): ${configurationTimeReport.size}")
         val projects = JSONArray()
         for (measuredConfigurationInfo in configurationTimeReport) {
             val configurationInfo = measuredConfigurationInfo.measuredInstance
@@ -109,6 +108,6 @@ class HTMLReporter(
         executionTimeJson = null
         systemLoadJson = null
 
-        println("Build insights report is available in ${reportHtmlFile.absolutePath}")
+        println("Build insights report is available in file://${reportHtmlFile.absolutePath}")
     }
 }

@@ -49,10 +49,10 @@ class GradleInsightsPlugin @Inject constructor(private val registry: BuildEvents
                     list.add(HTMLReporter(project))
                 }
             })
-            executionTimeMeasurementModule.getConfigurationTimeReportProvider().let {
-                buildServiceSpec.parameters.configurationTimeReportProvider.set(it)
+            executionTimeMeasurementModule.getConfigurationTimeTimeMeasurementService()?.let {
+                buildServiceSpec.parameters.configurationTimeReportService.set(it)
             }
-            executionTimeMeasurementModule.getExecutionTimeReportProvider()?.let {
+            executionTimeMeasurementModule.getExecutionTimeTimeMeasurementService()?.let {
                 buildServiceSpec.parameters.executionTimeReportService.set(it)
             }
             systemLoadModule.getSystemLoadReportProvider()?.let {

@@ -34,7 +34,7 @@ class ConsoleExecutionTimeReporter:
     override fun submitReport() {
         var firstConfigurationStartTime = 0L
         var lastTaskEndTime = 0L
-        configurationTimeReport?.let { report ->
+        configurationTimeReport?.takeIf { it.isNotEmpty() }?.let { report ->
             println("Configuration time:")
             firstConfigurationStartTime = report.minOf { it.startTime }
             val lastConfigurationEndTime = report.maxOf { it.endTime }
@@ -50,7 +50,7 @@ class ConsoleExecutionTimeReporter:
             }
         }
 
-        taskExecutionTimeReport?.let { report ->
+        taskExecutionTimeReport?.takeIf { it.isNotEmpty() }?.let { report ->
             println("Task execution time:")
             val firstTaskStartTime = report.minOf { it.startTime }
 
