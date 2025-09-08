@@ -14,6 +14,7 @@ import com.smplio.gradle.build.insights.modules.timing.report_providers.TaskExec
 import com.smplio.gradle.build.insights.report.execution.IExecutionStatsReceiver
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
+import org.gradle.api.provider.Provider
 import org.gradle.api.services.BuildService
 import org.gradle.api.services.BuildServiceParameters
 import org.gradle.tooling.events.FinishEvent
@@ -26,14 +27,14 @@ abstract class CompositeReportBuildService : BuildService<CompositeReportBuildSe
     AutoCloseable
 {
     interface Parameters: BuildServiceParameters {
-        val reporters: ListProperty<IReporter>
+        val reporters: ListProperty<Provider<IReporter>>
         val systemLoadReportService: Property<SystemLoadService>
         val configurationTimeReportService: Property<ConfigurationTimeMeasurementService>
         val executionTimeReportService: Property<TaskExecutionTimeMeasurementService>
     }
 
     override fun close() {
-        val reporters = parameters.reporters.orNull ?: return
+        val reporters = parameters.reporters.orNull?.map { it.get() } ?: return
         val systemLoadService = parameters.systemLoadReportService.orNull ?: return
         val executionTimeReportService = parameters.executionTimeReportService.orNull ?: return
         val configurationTimeReportProvider = parameters.configurationTimeReportService.orNull ?: return
