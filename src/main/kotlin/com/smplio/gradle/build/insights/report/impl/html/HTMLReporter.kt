@@ -94,15 +94,17 @@ class HTMLReporter(
             buildChartsJsText,
         )
 
-        reportHtmlFile.bufferedWriter(Charsets.UTF_8).use {
-            it.write(html)
+        reportHtmlFile.bufferedWriter(Charsets.UTF_8).use { writer ->
+            html?.let { writer.write(it) }
         }
 
-        Files.copy(
-            javaClass.getResourceAsStream("/style.css"),
-            Path(styleCssPath),
-            StandardCopyOption.REPLACE_EXISTING,
-        )
+        javaClass.getResourceAsStream("/style.css")?.let { resourceStream ->
+            Files.copy(
+                resourceStream,
+                Path(styleCssPath),
+                StandardCopyOption.REPLACE_EXISTING,
+            )
+        }
 
         configurationTimeJson = null
         executionTimeJson = null

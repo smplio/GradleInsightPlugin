@@ -5,7 +5,6 @@ import com.smplio.gradle.build.insights.modules.load.SystemLoadModule
 import com.smplio.gradle.build.insights.modules.timing.ExecutionTimeMeasurementModule
 import com.smplio.gradle.build.insights.report.CompositeReportBuildService
 import com.smplio.gradle.build.insights.report.IReporter
-import com.smplio.gradle.build.insights.report.execution.IExecutionStatsReceiver
 import com.smplio.gradle.build.insights.report.impl.html.HTMLReporter
 import org.gradle.api.Plugin
 import org.gradle.api.Project
