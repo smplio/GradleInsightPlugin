@@ -60,13 +60,20 @@ class GradleInsightsPlugin @Inject constructor(private val registry: BuildEvents
 
             val startParameter = project.gradle.startParameter
             val parts = mutableListOf<String>()
-            startParameter.projectDir?.absolutePath?.let { parts.add("-p $it") }
+            startParameter.projectDir?.let { projectDir ->
+                val rootPath = project.rootProject.rootDir.toPath()
+                val projectPath = projectDir.toPath()
+                val p = try {
+                    val rel = rootPath.relativize(projectPath).toString()
+                    rel.ifEmpty { "." }
+                } catch (e: IllegalArgumentException) {
+                    // Fallback if paths are on different roots (e.g., different drives)
+                    projectPath.toString()
+                }
+                parts.add("-p $p")
+            }
             if (startParameter.taskNames.isNotEmpty()) {
                 parts.add(startParameter.taskNames.joinToString(" "))
-            }
-            if (startParameter.projectProperties.isNotEmpty()) {
-                val props = startParameter.projectProperties.toSortedMap()
-                props.forEach { (k, v) -> parts.add("-P${k}=${v}") }
             }
             buildServiceSpec.parameters.startParameters.set(parts.joinToString(" "))
         }
