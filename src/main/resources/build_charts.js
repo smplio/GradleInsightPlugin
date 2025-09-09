@@ -69,7 +69,7 @@ new Chart(cpuChart, {
                             label += ': ';
                         }
                         if (context.parsed.y !== null) {
-                            label += context.parsed.y;
+                            label += Math.round(context.parsed.y);
                         }
                         label += '%';
                         return label;

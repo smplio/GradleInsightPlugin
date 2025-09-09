@@ -31,6 +31,7 @@ abstract class CompositeReportBuildService : BuildService<CompositeReportBuildSe
         val systemLoadReportService: Property<SystemLoadService>
         val configurationTimeReportService: Property<ConfigurationTimeMeasurementService>
         val executionTimeReportService: Property<TaskExecutionTimeMeasurementService>
+        val startParameters: Property<String>
     }
 
     override fun close() {
@@ -67,7 +68,8 @@ abstract class CompositeReportBuildService : BuildService<CompositeReportBuildSe
                     measuredInstance = BuildInfo(
                         status = BuildInfo.ExecutionStatus.Success().takeIf {
                             !taskExecutionTimeline.isNullOrEmpty() && taskExecutionTimeline.none { it.measuredInstance.status is TaskInfo.ExecutionStatus.Failed }
-                        } ?: BuildInfo.ExecutionStatus.Failed()
+                        } ?: BuildInfo.ExecutionStatus.Failed(),
+                        startParameters = parameters.startParameters.orNull ?: ""
                     ),
                     startTime = min(configurationTimeline?.minOfOrNull { it.startTime } ?: 0L, taskExecutionTimeline?.minOfOrNull { it.startTime } ?: 0L),
                     endTime = max(configurationTimeline?.maxOfOrNull { it.endTime } ?: 0L, taskExecutionTimeline?.maxOfOrNull { it.endTime } ?: 0L),

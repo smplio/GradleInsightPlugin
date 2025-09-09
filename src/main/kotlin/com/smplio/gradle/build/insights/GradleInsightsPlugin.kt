@@ -57,6 +57,25 @@ class GradleInsightsPlugin @Inject constructor(private val registry: BuildEvents
             systemLoadModule.getSystemLoadReportProvider()?.let {
                 buildServiceSpec.parameters.systemLoadReportService.set(it)
             }
+
+            val startParameter = project.gradle.startParameter
+            val parts = mutableListOf<String>()
+            startParameter.projectDir?.let { projectDir ->
+                val rootPath = project.rootProject.rootDir.toPath()
+                val projectPath = projectDir.toPath()
+                val p = try {
+                    val rel = rootPath.relativize(projectPath).toString()
+                    rel.ifEmpty { "." }
+                } catch (e: IllegalArgumentException) {
+                    // Fallback if paths are on different roots (e.g., different drives)
+                    projectPath.toString()
+                }
+                parts.add("-p $p")
+            }
+            if (startParameter.taskNames.isNotEmpty()) {
+                parts.add(startParameter.taskNames.joinToString(" "))
+            }
+            buildServiceSpec.parameters.startParameters.set(parts.joinToString(" "))
         }
         registry.onTaskCompletion(compositeReportBuildService)
 

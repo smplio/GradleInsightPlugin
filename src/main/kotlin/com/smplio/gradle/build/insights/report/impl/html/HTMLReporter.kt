@@ -31,10 +31,12 @@ class HTMLReporter(
     private var configurationTimeJson: String? = null
     private var executionTimeJson: String? = null
     private var systemLoadJson: String? = null
+    private var startParametersText: String? = null
 
     override fun reportExecutionStats(stats: ExecutionStats) {
         stats.configurationTimeline?.let { reportConfigurationTime(it) }
         stats.taskExecutionTimeline?.let { reportTaskExecutionTime(it) }
+        startParametersText = stats.buildInfo.measuredInstance.startParameters
     }
 
     override fun reportTaskExecutionTime(taskExecutionTimeReport: TaskExecutionTimeReport) {
@@ -86,6 +88,7 @@ class HTMLReporter(
         val buildChartsJsText = javaClass.getResourceAsStream("/build_charts.js")?.reader()?.use { it.readText() }
 
         val html = javaClass.getResourceAsStream("/index.html")?.reader()?.readText()?.format(
+            startParametersText ?: "",
             configurationTimeJson ?: "",
             executionTimeJson ?: "",
             systemLoadJson ?: "",
@@ -109,6 +112,7 @@ class HTMLReporter(
         configurationTimeJson = null
         executionTimeJson = null
         systemLoadJson = null
+        startParametersText = null
 
         println("Build insights report is available in file://${reportHtmlFile.absolutePath}")
     }
