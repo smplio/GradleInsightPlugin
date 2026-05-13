@@ -27,21 +27,22 @@ new Chart(cpuChart, {
     data: {
         labels: labels.map(value => Math.round((value - minTime) / 1000) + 's'),
         datasets: [
-            {
-                label: 'Gradle CPU usage',
-                data: gradleJvmCpuPercentMetrics,
-                fill: true,
-                borderColor: 'rgb(85,160,223)',
-                backgroundColor: 'rgb(85,180,223)',
-                tension: 0.1
-            },
+
             {
                 label: 'Children CPU usage',
                 data: gradleDescendantsCpuPercentMetrics,
                 fill: true,
                 borderColor: 'rgb(84,105,220)',
-                backgroundColor: 'rgb(84,125,220)',
+                backgroundColor: 'rgba(84,125,220, 0.5)',
                 tension: 0.1,
+            },
+            {
+                label: 'Gradle CPU usage',
+                data: gradleJvmCpuPercentMetrics,
+                fill: true,
+                borderColor: 'rgb(85,160,223)',
+                backgroundColor: 'rgba(85,180,223, 0.5)',
+                tension: 0.1
             },
         ],
     },
