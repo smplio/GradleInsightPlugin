@@ -15,6 +15,7 @@ abstract class GradleInsightsPluginExtension(project: Project) {
     val vcsDataProvider: Property<IVCSDataProvider> = project.objects.property(IVCSDataProvider::class.java).convention(
         GitDataProvider()
     )
+    val enableDependenciesGraphBuild: Property<Boolean> = project.objects.property(Boolean::class.java).convention(false)
 
     @Nested
     abstract fun getExecutionTimeMeasurementConfiguration(): ExecutionTimeMeasurementConfiguration

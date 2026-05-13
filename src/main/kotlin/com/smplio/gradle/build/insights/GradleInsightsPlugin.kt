@@ -79,8 +79,10 @@ class GradleInsightsPlugin @Inject constructor(private val registry: BuildEvents
         }
         registry.onTaskCompletion(compositeReportBuildService)
 
-        GraphBuilder().also {
-            it.buildProjectDependencyGraph(project)
+        if (pluginConfig.enableDependenciesGraphBuild.getOrElse(false)) {
+            GraphBuilder().also {
+                it.buildProjectDependencyGraph(project)
+            }
         }
     }
 }
