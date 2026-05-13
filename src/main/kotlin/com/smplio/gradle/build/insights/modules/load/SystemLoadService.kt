@@ -10,7 +10,8 @@ import java.util.concurrent.TimeUnit
 
 abstract class SystemLoadService: BuildService<BuildServiceParameters.None>,
     OperationCompletionListener,
-    ISystemLoadReportProvider
+    ISystemLoadReportProvider,
+    AutoCloseable
 {
 
     private val registry: MetricRegistry = MetricRegistry()
@@ -38,5 +39,9 @@ abstract class SystemLoadService: BuildService<BuildServiceParameters.None>,
 
     override fun provideSystemLoadReport(): SystemLoadReport? {
         return metricsReporter.provideSystemLoadReport()
+    }
+
+    override fun close() {
+        SystemLoadMetric.CpuLoadSampler.instance.shutdown()
     }
 }
